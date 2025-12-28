@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportDuo Thiện Shop Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        --color-primary: #58cc02;
+        --color-danger: #ff4b4b;
+        --font-stack: "Nunito", sans-serif;
+      }
+
+      body {
+        font-family: var(--font-stack);
+        background-color: #f7f7f7;
+        -webkit-tap-highlight-color: transparent;
+        overflow-x: hidden;
+      }
+
+      /* Utilities */
+      .btn-3d {
+        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom-width: 4px;
+        transform: translateY(0);
+      }
+      .btn-3d:active {
+        border-bottom-width: 0px;
+        transform: translateY(4px);
+        margin-top: 4px;
+        margin-bottom: -4px;
+      }
+
+      .card-3d {
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom-width: 4px;
+      }
+      .card-3d:active {
+        border-bottom-width: 0px;
+        transform: translateY(4px);
+      }
+
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Animations */
+      @keyframes popIn {
+        0% {
+          transform: scale(0.95);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0px);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+      }
+      @keyframes receiptPrint {
+        0% {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .animate-pop {
+        animation: popIn 0.2s ease-out;
+      }
+      .animate-slide-right {
+        animation: slideInRight 0.3s ease-out;
+      }
+      .animate-receipt {
+        animation: receiptPrint 0.5s ease-out;
+      }
+      .floating-text {
+        position: absolute;
+        animation: floatUp 0.8s ease-out forwards;
+        pointer-events: none;
+        font-weight: bold;
+        color: var(--color-primary);
+        z-index: 9999;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
+
+      /* Sidebar */
+      #sidebar {
+        transition: width 0.3s ease, transform 0.3s ease;
+      }
+      .sidebar-expanded {
+        width: 260px;
+      }
+      .sidebar-collapsed {
+        width: 80px;
+      }
+
+      @media (max-width: 768px) {
+        #sidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          z-index: 50;
+          transform: translateX(-100%);
+          width: 280px;
+        }
+        #sidebar.mobile-open {
+          transform: translateX(0);
+        }
+        .sidebar-overlay {
+          display: block;
+          position: fixed;
+          inset: 0;
+          bg: black;
+          opacity: 0;
+          z-index: 40;
+          pointer-events: none;
+          transition: opacity 0.3s;
+        }
+        .sidebar-overlay.active {
+          pointer-events: auto;
+          opacity: 0.5;
+          background: black;
+        }
+      }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="text-gray-600 h-screen flex flex-col overflow-hidden">
+    <div id="sound-engine"></div>
+    <div
+      id="mobile-overlay"
+      class="sidebar-overlay hidden md:hidden"
+      onclick="toggleMobileSidebar()"
+    ></div>
+
+    <div class="flex h-full w-full">
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="bg-white border-r-2 border-gray-200 flex flex-col h-full sidebar-expanded z-50 shrink-0"
+      >
+        <div
+          class="p-5 flex items-center justify-between h-16 border-b border-gray-100"
+        >
+          <h1
+            id="logo-text"
+            class="text-[#58cc02] font-black text-2xl tracking-tighter uppercase truncate"
+          >
+            SportDuo
+          </h1>
+          <button
+            onclick="toggleSidebar()"
+            class="hidden md:flex p-2 rounded-xl hover:bg-gray-100 text-gray-400"
+          >
+            <i data-lucide="panel-left" class="w-6 h-6"></i>
+          </button>
+          <button
+            onclick="toggleMobileSidebar()"
+            class="md:hidden p-2 rounded-xl hover:bg-gray-100 text-gray-400"
+          >
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+        <nav class="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
+          <button
+            onclick="switchTab('products')"
+            id="nav-products"
+            class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-2xl font-bold transition-all border-2 border-transparent text-gray-500 hover:bg-gray-100 uppercase text-sm tracking-wide"
+          >
+            <i data-lucide="package" class="w-6 h-6 shrink-0"></i>
+            <span class="nav-label truncate">Kho Hàng</span>
+          </button>
+          <button
+            onclick="switchTab('pos')"
+            id="nav-pos"
+            class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-2xl font-bold transition-all border-2 border-transparent text-gray-500 hover:bg-gray-100 uppercase text-sm tracking-wide"
+          >
+            <i data-lucide="shopping-bag" class="w-6 h-6 shrink-0"></i>
+            <span class="nav-label truncate">Bán Hàng</span>
+          </button>
+          <button
+            onclick="switchTab('stats')"
+            id="nav-stats"
+            class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-2xl font-bold transition-all border-2 border-transparent text-gray-500 hover:bg-gray-100 uppercase text-sm tracking-wide"
+          >
+            <i data-lucide="bar-chart-3" class="w-6 h-6 shrink-0"></i>
+            <span class="nav-label truncate">Thống Kê</span>
+          </button>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100">
+          <div
+            class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer"
+          >
+            <div
+              class="w-10 h-10 bg-[#ffc800] rounded-full flex items-center justify-center text-white font-bold border-2 border-[#e5a200] shrink-0"
+            >
+              A
+            </div>
+            <div class="nav-label font-bold text-gray-700 text-sm truncate">
+              <div>Admin</div>
+              <div class="text-xs text-gray-400 font-normal">
+                Quản lý cửa hàng
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 flex flex-col h-full bg-[#f7f7f7] min-w-0">
+        <!-- Mobile Header -->
+        <header
+          class="md:hidden bg-white px-4 h-16 border-b-2 border-gray-200 flex justify-between items-center shrink-0 z-40"
+        >
+          <button
+            onclick="toggleMobileSidebar()"
+            class="text-gray-500 btn-3d bg-white border-gray-200 border-2 rounded-xl p-2"
+          >
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <h1 class="text-[#58cc02] font-black text-xl uppercase">SportDuo</h1>
+          <div class="w-9"></div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <div id="app-content" class="flex-1 overflow-hidden relative">
+          <!-- Content injected via JS -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Modals -->
+    <div
+      id="modal-container"
+      class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-200"
+    ></div>
+
+    <!-- Confirm Dialog -->
+    <div
+      id="confirm-container"
+      class="hidden fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-200"
+    >
+      <div
+        class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-pop text-center"
+      >
+        <div
+          class="w-16 h-16 bg-red-100 text-[#ff4b4b] rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-xl font-black text-gray-700 mb-2 uppercase">
+          Xác nhận
+        </h3>
+        <p id="confirm-msg" class="text-gray-500 mb-6 font-bold"></p>
+        <div class="flex gap-3">
+          <button
+            onclick="closeConfirm(false)"
+            class="flex-1 btn-3d bg-white border-2 border-gray-200 text-gray-500 font-bold py-3 rounded-xl uppercase"
+          >
+            Hủy
+          </button>
+          <button
+            id="confirm-btn-yes"
+            class="flex-1 btn-3d bg-[#ff4b4b] border-[#d40000] text-white font-bold py-3 rounded-xl uppercase"
+          >
+            Đồng ý
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout Config Modal -->
+    <div
+      id="checkout-modal"
+      class="hidden fixed inset-0 bg-black/50 z-[115] flex items-end md:items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-200"
+    >
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Variant Selector Modal -->
+    <div
+      id="variant-selector"
+      class="hidden fixed inset-0 bg-black/50 z-[110] flex items-end md:items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-200"
+    >
+      <!-- Injected via JS -->
+    </div>
+
+    <div
+      id="toast-container"
+      class="fixed top-4 right-4 z-[130] flex flex-col gap-2 pointer-events-none"
+    ></div>
+
+    <script>
+      // --- 1. CORE & STATE ---
+      const state = {
+        products: JSON.parse(localStorage.getItem("products")) || [],
+        transactions: JSON.parse(localStorage.getItem("transactions")) || [],
+        cart: [],
+        activeTab: "pos",
+        isSidebarCollapsed: false,
+        customerName: "",
+        customerPhone: "",
+
+        // New Discount State
+        discountType: "amount", // 'amount' (VNĐ) or 'percent' (%)
+        discountValue: 0, // Stores raw input (e.g. 5000 or 10)
+
+        filterStats: "all",
+        searchStats: "",
+        dateFrom: "",
+        dateTo: "",
+      };
+
+      // --- 2. AUDIO ENGINE ---
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      function playSound(type) {
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === "click") {
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } else if (type === "success") {
+          [523.25, 659.25, 783.99].forEach((f, i) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.type = "triangle";
+            o.frequency.value = f;
+            g.gain.setValueAtTime(0.1, now + i * 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+            o.start(now + i * 0.1);
+            o.stop(now + i * 0.1 + 0.3);
+          });
+        } else if (type === "error") {
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(150, now);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        } else if (type === "add") {
+          osc.frequency.setValueAtTime(800, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        }
+      }
+
+      // --- 3. UTILS ---
+      const formatCurrency = (a) =>
+        new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(a);
+      const formatNumber = (n) => new Intl.NumberFormat("vi-VN").format(n);
+      const parseNumber = (s) =>
+        Number(String(s).replace(/\./g, "").replace(/,/g, ""));
+      const generateId = () => Math.random().toString(36).substr(2, 9);
+      const el = (id) => document.getElementById(id);
+      const saveData = () => {
+        localStorage.setItem("products", JSON.stringify(state.products));
+        localStorage.setItem(
+          "transactions",
+          JSON.stringify(state.transactions)
+        );
+      };
+      const formatInput = (input) => {
+        let val = input.value.replace(/\D/g, "");
+        input.value = val
+          ? new Intl.NumberFormat("vi-VN").format(parseInt(val))
+          : "";
+      };
+
+      function showToast(msg, type = "success") {
+        const container = el("toast-container");
+        const toast = document.createElement("div");
+        const style =
+          type === "success"
+            ? "bg-[#58cc02] border-[#46a302]"
+            : "bg-[#ff4b4b] border-[#d40000]";
+        toast.className = `${style} border-b-4 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transform translate-x-full transition-transform duration-300 flex items-center gap-2 pointer-events-auto`;
+        toast.innerHTML = `<i data-lucide="${
+          type === "success" ? "check" : "alert-circle"
+        }" class="w-5 h-5"></i> ${msg}`;
+        container.appendChild(toast);
+        lucide.createIcons();
+        requestAnimationFrame(() => (toast.style.transform = "translateX(0)"));
+        setTimeout(() => {
+          toast.style.transform = "translateX(120%)";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // --- FIXED: COPY TO CLIPBOARD ---
+      function copyToClipboard(text) {
+        try {
+          // Fallback for iframe restrictions or older browsers
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          textArea.style.position = "fixed"; // Avoid scrolling
+          textArea.style.top = "0";
+          textArea.style.left = "0";
+          textArea.style.opacity = "0";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+
+          const successful = document.execCommand("copy");
+          document.body.removeChild(textArea);
+
+          if (successful) {
+            showToast("Đã sao chép: " + text);
+          } else {
+            // Try the modern API as a backup if execCommand fails (though execCommand is safer in iframes)
+            navigator.clipboard
+              .writeText(text)
+              .then(() => showToast("Đã sao chép: " + text))
+              .catch((err) => {
+                console.error("Copy failed", err);
+                showToast("Lỗi sao chép (Quyền bị chặn)", "error");
+              });
+          }
+        } catch (err) {
+          console.error("Copy error", err);
+          showToast("Không thể sao chép", "error");
+        }
+      }
+
+      // --- 4. NAVIGATION & UI ---
+      function switchTab(tab) {
+        state.activeTab = tab;
+        playSound("click");
+        document.querySelectorAll(".nav-item").forEach((b) => {
+          b.classList.remove(
+            "bg-[#dcfce7]",
+            "text-[#58cc02]",
+            "border-[#bbf7d0]"
+          );
+          b.classList.add("border-transparent", "text-gray-500");
+        });
+        el(`nav-${tab}`).classList.add(
+          "bg-[#dcfce7]",
+          "text-[#58cc02]",
+          "border-[#bbf7d0]"
+        );
+        el(`nav-${tab}`).classList.remove(
+          "border-transparent",
+          "text-gray-500"
+        );
+
+        // Clear stats filter/search state when switching tabs if needed,
+        // but for better UX we might keep them. For now, let's keep them.
+
+        renderContent();
+        if (el("sidebar").classList.contains("mobile-open"))
+          toggleMobileSidebar();
+      }
+
+      function toggleSidebar() {
+        state.isSidebarCollapsed = !state.isSidebarCollapsed;
+        const sb = el("sidebar");
+        if (state.isSidebarCollapsed) {
+          sb.classList.remove("sidebar-expanded");
+          sb.classList.add("sidebar-collapsed");
+          el("logo-text").style.display = "none";
+          document
+            .querySelectorAll(".nav-label")
+            .forEach((l) => (l.style.display = "none"));
+        } else {
+          sb.classList.remove("sidebar-collapsed");
+          sb.classList.add("sidebar-expanded");
+          el("logo-text").style.display = "block";
+          document
+            .querySelectorAll(".nav-label")
+            .forEach((l) => (l.style.display = "block"));
+        }
+      }
+
+      function toggleMobileSidebar() {
+        const sb = el("sidebar");
+        sb.classList.toggle("mobile-open");
+        const ov = document.querySelector(".sidebar-overlay");
+        if (sb.classList.contains("mobile-open")) {
+          ov.classList.remove("hidden");
+          setTimeout(() => ov.classList.add("active"), 10);
+        } else {
+          ov.classList.remove("active");
+          setTimeout(() => ov.classList.add("hidden"), 300);
+        }
+      }
+
+      // --- 5. RENDER CONTENT ---
+      function renderContent() {
+        if (state.activeTab === "products") renderProducts();
+        else if (state.activeTab === "pos") renderPOS();
+        else if (state.activeTab === "stats") renderStats();
+      }
+
+      // === TAB: KHO HÀNG (PRODUCTS) ===
+      function renderProducts() {
+        const totalStock = state.products.reduce(
+          (s, p) =>
+            s +
+            (p.variants
+              ? p.variants.reduce((vs, v) => vs + v.quantity, 0)
+              : p.stock),
+          0
+        );
+        const totalValue = state.products.reduce((s, p) => {
+          const stock = p.variants
+            ? p.variants.reduce((vs, v) => vs + v.quantity, 0)
+            : p.stock;
+          return s + p.importPrice * stock;
+        }, 0);
+
+        el("app-content").innerHTML = `
+                <div class="h-full overflow-y-auto p-4 md:p-6 pb-20 animate-pop">
+                    <div class="max-w-7xl mx-auto">
+                        <div class="bg-white p-4 md:p-5 rounded-2xl border-2 border-gray-200 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-0 z-10">
+                            <div>
+                                <h2 class="text-2xl font-black text-gray-700 uppercase tracking-tight">Kho Hàng</h2>
+                                <div class="text-sm text-gray-400 font-bold mt-1 flex flex-wrap gap-4">
+                                    <span><i data-lucide="package" class="inline w-4 h-4"></i> ${totalStock} sản phẩm</span>
+                                    <span><i data-lucide="wallet" class="inline w-4 h-4"></i> Vốn: ${formatCurrency(
+                                      totalValue
+                                    )}</span>
+                                </div>
+                            </div>
+                            <button onclick="openProductModal()" class="btn-3d bg-[#58cc02] border-[#58a700] text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg w-full md:w-auto justify-center">
+                                <i data-lucide="plus-circle" class="w-5 h-5"></i> <span>THÊM MỚI</span>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            ${state.products
+                              .map((p) => {
+                                const currentStock =
+                                  p.variants && p.variants.length > 0
+                                    ? p.variants.reduce(
+                                        (sum, v) => sum + v.quantity,
+                                        0
+                                      )
+                                    : p.stock;
+
+                                const profit = p.sellPrice - p.importPrice;
+                                const stockStatus =
+                                  currentStock === 0
+                                    ? "bg-red-500"
+                                    : currentStock < 5
+                                    ? "bg-orange-500"
+                                    : "bg-green-500";
+                                const statusText =
+                                  currentStock === 0
+                                    ? "Hết hàng"
+                                    : currentStock < 5
+                                    ? "Sắp hết"
+                                    : "Sẵn hàng";
+                                const maxStock =
+                                  p.initialStock ||
+                                  (currentStock > 0 ? currentStock : 10);
+                                const percent = Math.min(
+                                  (currentStock / maxStock) * 100,
+                                  100
+                                );
+
+                                return `
+                                    <div class="bg-white border-2 border-gray-200 rounded-3xl p-5 relative group hover:border-[#1cb0f6] transition-all shadow-sm flex flex-col h-full">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase text-white ${stockStatus}">${statusText}</span>
+                                            ${
+                                              p.type === "commission"
+                                                ? `<span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase bg-[#ffc800] text-white">Hoa hồng</span>`
+                                                : ""
+                                            }
+                                        </div>
+                                        
+                                        <h3 class="font-black text-lg text-gray-700 mb-3 line-clamp-2">${
+                                          p.name
+                                        }</h3>
+                                        
+                                        <div class="space-y-2 mb-4 flex-1">
+                                            <div class="flex justify-between text-sm">
+                                                <span class="text-gray-400 font-bold uppercase text-xs">Giá bán</span>
+                                                <span class="font-black text-[#58cc02]">${formatCurrency(
+                                                  p.sellPrice
+                                                )}</span>
+                                            </div>
+                                            
+                                            ${
+                                              p.type !== "commission"
+                                                ? `
+                                            <div class="flex justify-between text-sm">
+                                                <span class="text-gray-400 font-bold uppercase text-xs">Lợi nhuận</span>
+                                                <span class="font-bold ${
+                                                  profit < 0
+                                                    ? "text-red-500"
+                                                    : "text-[#1cb0f6]"
+                                                }">${formatCurrency(
+                                                    profit
+                                                  )}</span>
+                                            </div>`
+                                                : `
+                                            <div class="flex justify-between text-sm">
+                                                <span class="text-gray-400 font-bold uppercase text-xs">Hoa hồng</span>
+                                                <span class="font-bold text-[#ffc800]">${formatCurrency(
+                                                  p.commission
+                                                )}</span>
+                                            </div>`
+                                            }
+                                            
+                                            ${
+                                              p.variants &&
+                                              p.variants.length > 0
+                                                ? `
+                                                <div class="bg-gray-50 rounded-xl p-2 border border-gray-100 mt-2 text-xs space-y-1">
+                                                    ${p.variants
+                                                      .map(
+                                                        (v) => `
+                                                        <div class="flex justify-between">
+                                                            <span class="font-bold text-gray-500 truncate mr-2">${v.color}</span>
+                                                            <span class="font-bold text-gray-800 shrink-0">${v.quantity}</span>
+                                                        </div>
+                                                    `
+                                                      )
+                                                      .join("")}
+                                                </div>
+                                            `
+                                                : `
+                                                <div class="flex justify-between items-center mt-2">
+                                                    <span class="text-gray-400 font-bold uppercase text-xs">Tồn kho</span>
+                                                    <span class="text-xl font-black text-gray-700">${currentStock}</span>
+                                                </div>
+                                                <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-1">
+                                                    <div class="h-full ${stockStatus} transition-all" style="width: ${percent}%"></div>
+                                                </div>
+                                            `
+                                            }
+                                        </div>
+
+                                        <div class="flex gap-2 pt-4 border-t border-dashed border-gray-200">
+                                            <button onclick="openProductModal('${
+                                              p.id
+                                            }')" class="flex-1 btn-3d bg-[#1cb0f6] border-[#1480b4] text-white py-2 rounded-xl font-bold text-xs uppercase flex justify-center items-center gap-2">
+                                                <i data-lucide="edit-3" class="w-4 h-4"></i> Sửa
+                                            </button>
+                                            <button onclick="deleteProduct('${
+                                              p.id
+                                            }')" class="btn-3d bg-white border-gray-200 border-2 text-gray-400 hover:text-red-500 py-2 px-3 rounded-xl">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                              })
+                              .join("")}
+                        </div>
+                        ${
+                          state.products.length === 0
+                            ? '<div class="text-center text-gray-400 mt-20 font-bold">Kho hàng đang trống.</div>'
+                            : ""
+                        }
+                    </div>
+                </div>
+            `;
+        lucide.createIcons();
+      }
+
+      // === TAB: BÁN HÀNG (POS) ===
+      function renderPOS() {
+        const subtotal = state.cart.reduce(
+          (sum, i) => sum + i.sellPrice * i.quantity,
+          0
+        );
+
+        // Calculate Discount
+        let discountAmount = 0;
+        if (state.discountType === "percent") {
+          const pct = Math.min(Math.max(state.discountValue, 0), 99);
+          discountAmount = Math.round(subtotal * (pct / 100));
+        } else {
+          discountAmount = state.discountValue;
+        }
+
+        const total = Math.max(0, subtotal - discountAmount);
+        const totalQty = state.cart.reduce((sum, i) => sum + i.quantity, 0);
+
+        el("app-content").innerHTML = `
+                <div class="h-full flex flex-col md:flex-row overflow-hidden bg-[#f0f2f5] animate-pop relative">
+                    <!-- LEFT: Product Grid -->
+                    <div class="flex-1 flex flex-col min-w-0 h-full relative">
+                        
+                        <!-- Floating Search Bar -->
+                        <div class="absolute top-3 left-3 right-3 z-20 pointer-events-none">
+                            <div class="max-w-xl mx-auto pointer-events-auto shadow-lg rounded-full bg-white flex items-center p-1.5 border-2 border-gray-100 transition-all focus-within:border-[#1cb0f6]">
+                                <div class="w-9 h-9 bg-gray-50 rounded-full flex items-center justify-center shrink-0">
+                                    <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
+                                </div>
+                                <input type="text" id="pos-search" onkeyup="filterPOS()" placeholder="Tìm sản phẩm..." 
+                                    class="border-none outline-none flex-1 ml-3 text-gray-700 font-bold bg-transparent text-base placeholder-gray-300">
+                            </div>
+                        </div>
+
+                        <!-- Scrollable Grid -->
+                        <div class="flex-1 overflow-y-auto p-3 pt-20 pb-32 md:pb-3">
+                            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-w-6xl mx-auto" id="pos-grid">
+                                ${state.products
+                                  .map((p) => {
+                                    const stock =
+                                      p.variants && p.variants.length > 0
+                                        ? p.variants.reduce(
+                                            (s, v) => s + v.quantity,
+                                            0
+                                          )
+                                        : p.stock;
+                                    const isOut = stock <= 0;
+                                    const stockColor =
+                                      stock < 5
+                                        ? "text-orange-500 bg-orange-50 border-orange-200"
+                                        : "text-gray-500 bg-gray-50 border-gray-200";
+
+                                    return `
+                                    <div onclick="handleClickProduct('${
+                                      p.id
+                                    }')" 
+                                        class="card-3d group relative bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer select-none hover:border-[#58cc02] h-full flex flex-col justify-between ${
+                                          isOut
+                                            ? "opacity-60 grayscale pointer-events-none"
+                                            : ""
+                                        }"
+                                        data-name="${p.name.toLowerCase()}">
+                                        
+                                        ${
+                                          p.type === "commission"
+                                            ? `
+                                            <div class="absolute -top-1 -right-1 z-10">
+                                                <div class="bg-[#ffc800] text-white p-1 rounded-bl-xl shadow-sm">
+                                                    <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                                                </div>
+                                            </div>`
+                                            : ""
+                                        }
+
+                                        <div>
+                                            <div class="mb-3">
+                                                <div class="font-bold text-gray-700 text-sm leading-tight group-hover:text-[#58cc02] transition-colors break-words min-h-[3rem] line-clamp-2">${
+                                                  p.name
+                                                }</div>
+                                                ${
+                                                  p.variants &&
+                                                  p.variants.length > 0
+                                                    ? `
+                                                    <div class="flex gap-1 mt-1.5 flex-wrap">
+                                                        <span class="text-[10px] text-gray-400 font-bold bg-gray-100 px-1.5 rounded">${p.variants.length} loại</span>
+                                                    </div>
+                                                `
+                                                    : ""
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="flex justify-between items-end pt-2 border-t border-dashed border-gray-100 mt-1">
+                                            <div class="text-[#58cc02] font-black text-base tracking-tight">${formatCurrency(
+                                              p.sellPrice
+                                            )}</div>
+                                            <div class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${stockColor} whitespace-nowrap">Kho: ${stock}</div>
+                                        </div>
+                                        
+                                        ${
+                                          isOut
+                                            ? `
+                                            <div class="absolute inset-0 bg-white/40 flex items-center justify-center backdrop-blur-[1px]">
+                                                <div class="bg-red-500 text-white font-black px-3 py-1 rounded-lg -rotate-12 shadow-xl border-2 border-white text-sm">HẾT HÀNG</div>
+                                            </div>
+                                        `
+                                            : ""
+                                        }
+                                    </div>
+                                    `;
+                                  })
+                                  .join("")}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Cart Panel -->
+                    <div class="w-full md:w-[400px] bg-white border-l-2 border-gray-200 flex flex-col h-[60vh] md:h-full fixed bottom-0 left-0 right-0 md:static z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-none rounded-t-3xl md:rounded-none transition-all">
+                        <!-- Mobile Handle -->
+                        <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-2 mb-1 md:hidden opacity-50"></div>
+                        
+                        <!-- Cart Header with Customer & Phone -->
+                        <div class="px-4 py-3 border-b border-gray-100 shrink-0 bg-white md:bg-gray-50/50 space-y-2">
+                            <h3 class="font-black text-gray-800 text-base uppercase tracking-tight flex items-center gap-2">
+                                <div class="bg-green-100 p-1 rounded-lg text-[#58cc02]"><i data-lucide="shopping-cart" class="w-4 h-4"></i></div>
+                                Đơn hàng
+                            </h3>
+                            <div class="flex gap-2">
+                                <div class="relative group flex-1">
+                                    <i data-lucide="user" class="absolute left-3 top-3 text-gray-400 w-4 h-4 group-focus-within:text-[#1cb0f6] transition-colors"></i>
+                                    <input type="text" value="${
+                                      state.customerName
+                                    }" oninput="state.customerName=this.value" placeholder="Tên khách" 
+                                        class="w-full pl-9 pr-3 py-2.5 bg-white border-2 border-gray-200 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1cb0f6] focus:bg-white transition-all placeholder-gray-400">
+                                </div>
+                                <div class="relative group w-1/3">
+                                    <i data-lucide="phone" class="absolute left-3 top-3 text-gray-400 w-4 h-4 group-focus-within:text-[#1cb0f6] transition-colors"></i>
+                                    <input type="text" value="${
+                                      state.customerPhone
+                                    }" oninput="state.customerPhone=this.value" placeholder="SĐT" 
+                                        class="w-full pl-9 pr-3 py-2.5 bg-white border-2 border-gray-200 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1cb0f6] focus:bg-white transition-all placeholder-gray-400">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cart Items -->
+                        <div class="flex-1 overflow-y-auto p-3 space-y-2 bg-white">
+                            ${
+                              state.cart.length === 0
+                                ? `
+                                <div class="h-full flex flex-col items-center justify-center text-gray-300 gap-3 opacity-50 select-none">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <i data-lucide="shopping-bag" class="w-8 h-8 text-gray-400"></i>
+                                    </div>
+                                    <span class="font-bold text-sm">Chưa có sản phẩm nào</span>
+                                </div>
+                            `
+                                : state.cart
+                                    .map(
+                                      (item) => `
+                                <div class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-100 shadow-sm animate-slide-right group hover:border-[#1cb0f6] transition-colors">
+                                    <div class="flex flex-col gap-0.5 items-center bg-gray-50 p-0.5 rounded-lg border border-gray-200 shrink-0">
+                                        <button onclick="updateCart('${
+                                          item.uniqueId
+                                        }', 1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#58cc02] rounded-md transition-colors font-black text-xs">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                        </button>
+                                        <input type="number" value="${
+                                          item.quantity
+                                        }" onchange="updateCartQty('${
+                                        item.uniqueId
+                                      }', this.value)" class="w-8 text-center font-black text-gray-700 bg-transparent text-sm outline-none focus:bg-white focus:ring-1 focus:ring-[#1cb0f6] rounded p-0 appearance-none m-0" />
+                                        <button onclick="updateCart('${
+                                          item.uniqueId
+                                        }', -1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#ff4b4b] rounded-md transition-colors font-black text-xs">
+                                            <i data-lucide="minus" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex-1 min-w-0 py-1">
+                                        <div class="font-bold text-gray-700 text-sm truncate mb-0.5">${
+                                          item.name
+                                        }</div>
+                                        <div class="flex items-center gap-1 flex-wrap">
+                                            <span class="text-[10px] text-gray-500 font-bold bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">${formatCurrency(
+                                              item.sellPrice
+                                            )}</span>
+                                            ${
+                                              item.variant
+                                                ? `<span class="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-200 truncate max-w-[80px]">${item.variant}</span>`
+                                                : ""
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="font-black text-[#58cc02] text-sm text-right min-w-[70px] shrink-0">
+                                        ${formatCurrency(
+                                          item.sellPrice * item.quantity
+                                        )}
+                                    </div>
+                                </div>
+                            `
+                                    )
+                                    .join("")
+                            }
+                        </div>
+
+                        <!-- Checkout Footer -->
+                        <div class="p-4 bg-gray-50 border-t-2 border-gray-200 shrink-0 pb-8 md:pb-4 rounded-t-3xl md:rounded-none">
+                            <div class="mb-3 flex flex-col gap-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Giảm giá:</span>
+                                    <div class="flex bg-white rounded-lg border border-gray-300 p-0.5">
+                                        <button onclick="setDiscountType('amount')" class="px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                                          state.discountType === "amount"
+                                            ? "bg-[#1cb0f6] text-white"
+                                            : "text-gray-400"
+                                        }">VNĐ</button>
+                                        <button onclick="setDiscountType('percent')" class="px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                                          state.discountType === "percent"
+                                            ? "bg-[#1cb0f6] text-white"
+                                            : "text-gray-400"
+                                        }">%</button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-end gap-2">
+                                    <input type="text" id="discount-input" value="${
+                                      state.discountValue > 0
+                                        ? state.discountValue
+                                        : ""
+                                    }" oninput="updateDiscount(this.value)" placeholder="${
+          state.discountType === "percent" ? "0-99" : "0"
+        }" 
+                                        class="w-full text-right border-b-2 border-gray-300 bg-transparent outline-none font-bold text-gray-700 focus:border-[#1cb0f6] text-lg">
+                                    <span class="text-sm font-bold text-gray-400">${
+                                      state.discountType === "percent"
+                                        ? "%"
+                                        : "đ"
+                                    }</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 font-bold text-[10px] uppercase tracking-wider">Tổng cộng</span>
+                                    <span class="font-black text-gray-700 text-base">${totalQty} <span class="text-[10px] font-bold text-gray-400">món</span></span>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-gray-400 font-bold text-[10px] uppercase tracking-wider">Thành tiền</span>
+                                    <span id="pos-total-display" class="text-2xl font-black text-[#58cc02] tracking-tighter">${formatCurrency(
+                                      total
+                                    )}</span>
+                                </div>
+                            </div>
+                            <button onclick="openCheckoutModal()" class="w-full btn-3d bg-[#58cc02] border-[#58a700] hover:bg-[#46a302] text-white py-3.5 rounded-xl font-black uppercase tracking-widest text-base flex justify-center items-center gap-2 shadow-lg hover:shadow-xl transition-all ${
+                              state.cart.length === 0
+                                ? "opacity-50 pointer-events-none grayscale"
+                                : ""
+                            }">
+                                <span>Thanh Toán</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        lucide.createIcons();
+        if (window.innerWidth > 768)
+          setTimeout(() => document.getElementById("pos-search")?.focus(), 100);
+      }
+
+      function setDiscountType(type) {
+        state.discountType = type;
+        state.discountValue = 0; // Reset value to avoid confusion
+        renderPOS();
+      }
+
+      function updateDiscount(val) {
+        // Remove non-numeric chars
+        let rawStr = val.replace(/\D/g, "");
+        let raw = parseInt(rawStr) || 0;
+
+        if (state.discountType === "percent") {
+          if (raw > 99) raw = 99;
+        }
+
+        state.discountValue = raw;
+
+        // Recalculate Total without re-rendering everything to keep focus
+        const subtotal = state.cart.reduce(
+          (s, i) => s + i.sellPrice * i.quantity,
+          0
+        );
+        let discountAmount = 0;
+        if (state.discountType === "percent") {
+          discountAmount = Math.round(subtotal * (state.discountValue / 100));
+        } else {
+          discountAmount = state.discountValue;
+        }
+        const total = Math.max(0, subtotal - discountAmount);
+
+        // Update Total Display directly
+        const totalEl = document.getElementById("pos-total-display");
+        if (totalEl) totalEl.innerText = formatCurrency(total);
+      }
+
+      // === TAB: THỐNG KÊ (STATS) ===
+      function renderStats() {
+        let filtered = [...state.transactions];
+
+        if (state.dateFrom && state.dateTo) {
+          const start = new Date(state.dateFrom);
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(state.dateTo);
+          end.setHours(23, 59, 59, 999);
+          filtered = filtered.filter((t) => {
+            const d = new Date(t.date);
+            return d >= start && d <= end;
+          });
+        }
+
+        if (state.searchStats) {
+          const term = state.searchStats.toLowerCase();
+          filtered = filtered.filter(
+            (t) =>
+              t.id.toLowerCase().includes(term) ||
+              t.customerName.toLowerCase().includes(term) ||
+              (t.customerPhone && t.customerPhone.includes(term))
+          );
+        }
+
+        if (state.filterStats === "unpaid") {
+          filtered = filtered.filter((t) => t.paymentStatus === "unpaid");
+        }
+
+        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const grouped = {};
+        filtered.forEach((t) => {
+          const d = new Date(t.date);
+          const key = `Tháng ${d.getMonth() + 1}/${d.getFullYear()}`;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(t);
+        });
+
+        // LOGIC TÍNH TOÁN
+        let totalRevenueNormal = 0;
+        let totalProfitNormal = 0;
+        let totalCommission = 0;
+        let totalDebt = 0;
+
+        filtered.forEach((t) => {
+          const isPaid = t.paymentStatus !== "unpaid";
+
+          if (!isPaid) {
+            totalDebt += t.totalAmount;
+          }
+
+          if (isPaid) {
+            // Calculate discount amount from saved transaction data
+            let discountAmount = 0;
+            if (t.discountType === "percent") {
+              // Re-calculate subtotal to apply percent
+              const sub = t.items.reduce(
+                (s, i) => s + i.sellPrice * i.quantity,
+                0
+              );
+              discountAmount = Math.round(sub * (t.discountValue / 100));
+            } else {
+              discountAmount = t.discountValue || 0; // Default or saved amount
+            }
+
+            // Simple distribution logic: subtract entire discount from revenue/profit
+
+            let subTotalNormal = 0;
+            let subProfitNormal = 0;
+
+            t.items.forEach((item) => {
+              if (item.type === "commission") {
+                totalCommission += (item.commission || 0) * item.quantity;
+              } else {
+                subTotalNormal += item.sellPrice * item.quantity;
+                subProfitNormal +=
+                  (item.sellPrice - item.importPrice) * item.quantity;
+              }
+            });
+
+            // Subtract discount
+            totalRevenueNormal += Math.max(0, subTotalNormal - discountAmount);
+            totalProfitNormal += Math.max(0, subProfitNormal - discountAmount);
+          }
+        });
+
+        const totalNetIncome = totalProfitNormal + totalCommission;
+
+        // HTML Construction split for partial updates
+        const container = el("app-content");
+        const isUpdate = el("stats-view-container"); // Check if layout exists
+
+        // 1. Summary HTML
+        const summaryHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-sm">
+                        <div class="text-gray-400 font-bold uppercase text-[10px] mb-1">Doanh thu (Thực tế)</div>
+                        <div class="text-xl font-black text-gray-800">${formatCurrency(
+                          totalRevenueNormal
+                        )}</div>
+                    </div>
+                    <div class="bg-[#f0fff4] border-2 border-[#58cc02] rounded-2xl p-4 shadow-sm">
+                        <div class="text-[#46a302] font-bold uppercase text-[10px] mb-1">Lợi nhuận (Thực tế)</div>
+                        <div class="text-xl font-black text-gray-800">${formatCurrency(
+                          totalProfitNormal
+                        )}</div>
+                    </div>
+                    <div class="bg-[#fffdf0] border-2 border-[#ffc800] rounded-2xl p-4 shadow-sm">
+                        <div class="text-[#e5a200] font-bold uppercase text-[10px] mb-1">Hoa hồng</div>
+                        <div class="text-xl font-black text-gray-800">${formatCurrency(
+                          totalCommission
+                        )}</div>
+                    </div>
+                    ${
+                      state.filterStats === "unpaid"
+                        ? `
+                        <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-4 shadow-sm">
+                            <div class="text-red-500 font-bold uppercase text-[10px] mb-1">Tổng nợ cần thu</div>
+                            <div class="text-xl font-black text-red-600">${formatCurrency(
+                              totalDebt
+                            )}</div>
+                        </div>
+                    `
+                        : `
+                        <div class="bg-[#1cb0f6] border-2 border-[#1496d4] rounded-2xl p-4 shadow-md text-white">
+                            <div class="font-bold uppercase text-[10px] mb-1 opacity-90">TỔNG THỰC THU</div>
+                            <div class="text-2xl font-black">${formatCurrency(
+                              totalNetIncome
+                            )}</div>
+                        </div>
+                    `
+                    }
+                </div>
+            `;
+
+        // 2. List HTML
+        const listHTML = `
+                <div class="space-y-6">
+                    ${Object.keys(grouped)
+                      .map(
+                        (groupName) => `
+                        <div>
+                            <div class="sticky top-0 bg-[#f7f7f7] z-10 py-2 mb-2 flex items-center gap-2">
+                                <div class="bg-gray-200 text-gray-600 font-black px-3 py-1 rounded-lg text-xs uppercase tracking-wide">${groupName}</div>
+                                <div class="h-0.5 bg-gray-200 flex-1 rounded-full"></div>
+                            </div>
+                            <div class="space-y-3">
+                                ${grouped[groupName]
+                                  .map((t) => {
+                                    const isUnpaid =
+                                      t.paymentStatus === "unpaid";
+                                    const methodBadge =
+                                      t.paymentMethod === "transfer"
+                                        ? '<span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-md font-bold uppercase">CK</span>'
+                                        : '<span class="text-[10px] bg-green-100 text-green-600 px-2 py-0.5 rounded-md font-bold uppercase">TM</span>';
+
+                                    const statusBadge = isUnpaid
+                                      ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-md font-bold uppercase">Nợ</span>'
+                                      : '<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md font-bold uppercase">Đã TT</span>';
+
+                                    return `
+                                    <div onclick="viewInvoice('${
+                                      t.id
+                                    }')" class="bg-white border-2 border-transparent border-b-gray-100 hover:border-[#1cb0f6] rounded-xl p-4 flex justify-between items-center cursor-pointer transition-all hover:shadow-md group relative overflow-hidden">
+                                        ${
+                                          isUnpaid
+                                            ? '<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>'
+                                            : ""
+                                        }
+                                        <div class="flex items-center gap-4 pl-2">
+                                            <div class="w-10 h-10 rounded-full bg-blue-50 text-[#1cb0f6] flex items-center justify-center font-bold text-xs shrink-0">
+                                                ${new Date(t.date).getDate()}
+                                            </div>
+                                            <div>
+                                                <div class="font-bold text-gray-700 group-hover:text-[#1cb0f6] flex items-center gap-2 flex-wrap">
+                                                    ${t.customerName}
+                                                    ${methodBadge}
+                                                    ${statusBadge}
+                                                </div>
+                                                <div class="text-xs text-gray-400 font-bold flex gap-2 items-center">
+                                                    <span>${new Date(
+                                                      t.date
+                                                    ).toLocaleTimeString(
+                                                      "vi-VN",
+                                                      {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                      }
+                                                    )}</span>
+                                                    <span class="bg-gray-100 px-1 rounded text-[10px] text-gray-500 font-mono flex items-center gap-1">
+                                                        #${t.id.substring(0, 6)}
+                                                        <button onclick="event.stopPropagation(); copyToClipboard('${
+                                                          t.id
+                                                        }')" class="hover:text-[#1cb0f6] p-0.5 rounded"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-black ${
+                                              isUnpaid
+                                                ? "text-red-500"
+                                                : "text-[#58cc02]"
+                                            }">${formatCurrency(
+                                      t.totalAmount
+                                    )}</div>
+                                            <div class="text-[10px] text-gray-400 font-bold">${
+                                              t.items.length
+                                            } món</div>
+                                        </div>
+                                    </div>
+                                `;
+                                  })
+                                  .join("")}
+                            </div>
+                        </div>
+                    `
+                      )
+                      .join("")}
+                    ${
+                      filtered.length === 0
+                        ? '<div class="text-center text-gray-400 py-10 font-bold">Không tìm thấy hóa đơn nào trong khoảng này.</div>'
+                        : ""
+                    }
+                </div>
+            `;
+
+        if (isUpdate) {
+          // Partial Update to keep focus on inputs
+          el("stats-summary").innerHTML = summaryHTML;
+          el("stats-list").innerHTML = listHTML;
+        } else {
+          // Full Render
+          container.innerHTML = `
+                    <div id="stats-view-container" class="h-full overflow-y-auto p-4 md:p-6 pb-20 animate-pop">
+                        <div class="max-w-5xl mx-auto space-y-6">
+                            <!-- Filters -->
+                            <div class="bg-white p-4 rounded-2xl border-2 border-gray-200 shadow-sm">
+                                <h3 class="font-black text-gray-400 text-xs uppercase mb-3">Bộ lọc tìm kiếm</h3>
+                                <div class="flex flex-col md:flex-row gap-4">
+                                    <div class="flex gap-2 flex-1">
+                                        <div class="flex-1">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Từ ngày</label>
+                                            <input type="date" value="${
+                                              state.dateFrom
+                                            }" onchange="updateDateFilter('from', this.value)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Đến ngày</label>
+                                            <input type="date" value="${
+                                              state.dateTo
+                                            }" onchange="updateDateFilter('to', this.value)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tìm kiếm</label>
+                                        <div class="relative">
+                                            <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
+                                            <input type="text" id="stats-search-input" value="${
+                                              state.searchStats
+                                            }" oninput="updateSearchStats(this.value)" placeholder="Mã đơn, tên, sđt..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-end gap-2">
+                                        <button onclick="toggleUnpaidFilter()" class="px-4 py-2 text-sm font-bold border-2 rounded-xl transition-all ${
+                                          state.filterStats === "unpaid"
+                                            ? "bg-red-50 border-red-200 text-red-500"
+                                            : "bg-gray-50 border-gray-200 text-gray-400"
+                                        }">Sổ Nợ</button>
+                                        <button onclick="clearStatsFilter()" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors">Xóa</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary Container -->
+                            <div id="stats-summary">${summaryHTML}</div>
+
+                            <!-- List Container -->
+                            <div id="stats-list">${listHTML}</div>
+                        </div>
+                    </div>
+                `;
+        }
+        lucide.createIcons();
+
+        // Restore focus if needed (optional since we don't destroy inputs now)
+        if (
+          isUpdate &&
+          document.activeElement &&
+          document.activeElement.id === "stats-search-input"
+        ) {
+          document.activeElement.focus();
+        }
+      }
+
+      // --- 6. LOGIC & ACTIONS ---
+
+      function filterPOS() {
+        const term = el("pos-search").value.toLowerCase();
+        document.querySelectorAll(".pos-item").forEach((item) => {
+          item.style.display = item.dataset.name.includes(term)
+            ? "flex"
+            : "none";
+        });
+      }
+
+      function handleClickProduct(id) {
+        const p = state.products.find((x) => x.id === id);
+
+        if (p.variants && p.variants.length > 0) {
+          const modal = el("variant-selector");
+          modal.innerHTML = `
+                    <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-pop" onclick="event.stopPropagation()">
+                        <h3 class="font-black text-gray-800 text-lg mb-1">${
+                          p.name
+                        }</h3>
+                        <p class="text-xs text-gray-400 font-bold uppercase mb-4">Chọn Phân loại</p>
+                        <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            ${p.variants
+                              .map(
+                                (v, idx) => `
+                                <button onclick="addToCart('${p.id}', '${
+                                  v.color
+                                }')" class="w-full flex justify-between items-center p-3 rounded-xl border-2 border-gray-100 hover:border-[#1cb0f6] hover:bg-blue-50 transition-all ${
+                                  v.quantity <= 0
+                                    ? "opacity-50 grayscale cursor-not-allowed"
+                                    : ""
+                                }" ${v.quantity <= 0 ? "disabled" : ""}>
+                                    <span class="font-bold text-gray-700">${
+                                      v.color
+                                    }</span>
+                                    <span class="text-xs font-black ${
+                                      v.quantity > 0
+                                        ? "text-[#58cc02] bg-[#dcfce7]"
+                                        : "text-red-500 bg-red-50"
+                                    } px-2 py-1 rounded-lg">Còn ${
+                                  v.quantity
+                                }</span>
+                                </button>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                        <button onclick="closeVariantModal()" class="mt-4 w-full py-3 bg-gray-100 text-gray-500 font-bold rounded-xl hover:bg-gray-200">Hủy</button>
+                    </div>
+                `;
+          modal.classList.remove("hidden");
+          setTimeout(() => (modal.style.opacity = "1"), 10);
+          playSound("click");
+        } else {
+          addToCart(p.id, null);
+        }
+      }
+
+      function closeVariantModal() {
+        const modal = el("variant-selector");
+        modal.style.opacity = "0";
+        setTimeout(() => modal.classList.add("hidden"), 200);
+      }
+
+      function addToCart(productId, variantColor) {
+        const product = state.products.find((p) => p.id === productId);
+        let stockAvailable = 0;
+
+        if (variantColor) {
+          const v = product.variants.find((x) => x.color === variantColor);
+          stockAvailable = v ? v.quantity : 0;
+        } else {
+          stockAvailable = product.stock;
+        }
+
+        if (stockAvailable <= 0) {
+          playSound("error");
+          return showToast("Hết hàng!", "error");
+        }
+
+        const uniqueId = variantColor
+          ? `${productId}|${variantColor}`
+          : productId;
+        const cartItem = state.cart.find((c) => c.uniqueId === uniqueId);
+
+        if (cartItem && cartItem.quantity >= stockAvailable) {
+          playSound("error");
+          return showToast("Không đủ tồn kho!", "error");
+        }
+
+        if (cartItem) {
+          cartItem.quantity++;
+        } else {
+          state.cart.push({
+            uniqueId,
+            id: productId,
+            name: product.name,
+            sellPrice: product.sellPrice,
+            importPrice: product.importPrice,
+            type: product.type,
+            commission: product.commission,
+            variant: variantColor,
+            quantity: 1,
+          });
+        }
+
+        closeVariantModal();
+        playSound("add");
+        renderPOS();
+
+        const float = document.createElement("div");
+        float.className = "floating-text text-2xl font-black text-[#58cc02]";
+        float.style.left = window.innerWidth / 2 + "px";
+        float.style.top = window.innerHeight / 2 + "px";
+        float.innerText = "+1";
+        document.body.appendChild(float);
+        setTimeout(() => float.remove(), 800);
+      }
+
+      function updateCartQty(uniqueId, val) {
+        let newQty = parseInt(val);
+        if (isNaN(newQty) || newQty < 1) newQty = 1;
+
+        const item = state.cart.find((c) => c.uniqueId === uniqueId);
+        const product = state.products.find((p) => p.id === item.id);
+        let maxStock = 0;
+        if (item.variant) {
+          const v = product.variants.find((x) => x.color === item.variant);
+          maxStock = v ? v.quantity : 0;
+        } else {
+          maxStock = product.stock;
+        }
+
+        if (newQty > maxStock) {
+          playSound("error");
+          showToast(`Kho chỉ còn ${maxStock}!`, "error");
+          newQty = maxStock;
+        }
+
+        item.quantity = newQty;
+        playSound("click");
+        renderPOS();
+      }
+
+      function updateCart(uniqueId, change) {
+        const item = state.cart.find((c) => c.uniqueId === uniqueId);
+        const product = state.products.find((p) => p.id === item.id);
+
+        let maxStock = 0;
+        if (item.variant) {
+          const v = product.variants.find((x) => x.color === item.variant);
+          maxStock = v ? v.quantity : 0;
+        } else {
+          maxStock = product.stock;
+        }
+
+        const newQty = item.quantity + change;
+        if (newQty <= 0) {
+          state.cart = state.cart.filter((c) => c.uniqueId !== uniqueId);
+        } else if (newQty > maxStock) {
+          playSound("error");
+          return showToast("Quá giới hạn kho!", "error");
+        } else {
+          item.quantity = newQty;
+        }
+        playSound("click");
+        renderPOS();
+      }
+
+      // --- CHECKOUT LOGIC WITH MODAL ---
+      function openCheckoutModal() {
+        if (state.cart.length === 0) return;
+
+        const subtotal = state.cart.reduce(
+          (s, i) => s + i.sellPrice * i.quantity,
+          0
+        );
+
+        // Calc Discount Amount
+        let discountAmount = 0;
+        if (state.discountType === "percent") {
+          const pct = Math.min(Math.max(state.discountValue, 0), 99);
+          discountAmount = Math.round(subtotal * (pct / 100));
+        } else {
+          discountAmount = state.discountValue;
+        }
+
+        const total = Math.max(0, subtotal - discountAmount);
+
+        const html = `
+                <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-pop" onclick="event.stopPropagation()">
+                    <h3 class="text-xl font-black text-gray-800 uppercase mb-4 text-center">Xác nhận thanh toán</h3>
+                    
+                    <div class="text-center mb-6">
+                        <span class="block text-gray-400 text-xs font-bold uppercase mb-1">Tổng số tiền</span>
+                        <span class="text-4xl font-black text-[#58cc02] tracking-tighter">${formatCurrency(
+                          total
+                        )}</span>
+                        ${
+                          discountAmount > 0
+                            ? `<div class="text-xs text-gray-400 mt-1 font-bold">(Đã giảm ${formatCurrency(
+                                discountAmount
+                              )})</div>`
+                            : ""
+                        }
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-gray-400 font-bold text-xs uppercase mb-2">Hình thức</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="pay-method" value="cash" checked class="peer sr-only">
+                                    <div class="p-3 rounded-xl border-2 border-gray-100 peer-checked:border-[#1cb0f6] peer-checked:bg-blue-50 font-bold text-gray-600 peer-checked:text-[#1cb0f6] text-center transition-all">
+                                        Tiền mặt
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="pay-method" value="transfer" class="peer sr-only">
+                                    <div class="p-3 rounded-xl border-2 border-gray-100 peer-checked:border-[#1cb0f6] peer-checked:bg-blue-50 font-bold text-gray-600 peer-checked:text-[#1cb0f6] text-center transition-all">
+                                        Chuyển khoản
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-400 font-bold text-xs uppercase mb-2">Trạng thái</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="pay-status" value="paid" checked class="peer sr-only">
+                                    <div class="p-3 rounded-xl border-2 border-gray-100 peer-checked:border-[#58cc02] peer-checked:bg-[#dcfce7] font-bold text-gray-600 peer-checked:text-[#58cc02] text-center transition-all">
+                                        Đã thanh toán
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="pay-status" value="unpaid" class="peer sr-only">
+                                    <div class="p-3 rounded-xl border-2 border-gray-100 peer-checked:border-[#ff4b4b] peer-checked:bg-red-50 font-bold text-gray-600 peer-checked:text-[#ff4b4b] text-center transition-all">
+                                        Ghi nợ
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="closeCheckoutModal()" class="flex-1 py-3.5 bg-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-200">Hủy</button>
+                        <button onclick="confirmCheckout()" class="flex-[2] btn-3d bg-[#58cc02] border-[#58a700] text-white py-3.5 rounded-2xl font-black uppercase">HOÀN TẤT</button>
+                    </div>
+                </div>
+            `;
+        const m = el("checkout-modal");
+        m.innerHTML = html;
+        m.classList.remove("hidden");
+        setTimeout(() => (m.style.opacity = "1"), 10);
+        playSound("click");
+      }
+
+      function closeCheckoutModal() {
+        const m = el("checkout-modal");
+        m.style.opacity = "0";
+        setTimeout(() => m.classList.add("hidden"), 200);
+      }
+
+      function confirmCheckout() {
+        const method = document.querySelector(
+          'input[name="pay-method"]:checked'
+        ).value;
+        const status = document.querySelector(
+          'input[name="pay-status"]:checked'
+        ).value;
+
+        const subtotal = state.cart.reduce(
+          (s, i) => s + i.sellPrice * i.quantity,
+          0
+        );
+
+        let discountAmount = 0;
+        if (state.discountType === "percent") {
+          const pct = Math.min(Math.max(state.discountValue, 0), 99);
+          discountAmount = Math.round(subtotal * (pct / 100));
+        } else {
+          discountAmount = state.discountValue;
+        }
+
+        const totalAmount = Math.max(0, subtotal - discountAmount);
+
+        const totalProfit = state.cart.reduce(
+          (s, i) => s + (i.sellPrice - i.importPrice) * i.quantity,
+          0
+        );
+        const totalCommission = state.cart.reduce(
+          (s, i) =>
+            s + (i.type === "commission" ? i.commission * i.quantity : 0),
+          0
+        );
+
+        const transaction = {
+          id: generateId(),
+          date: new Date().toISOString(),
+          customerName: state.customerName || "Khách lẻ",
+          customerPhone: state.customerPhone || "",
+          items: [...state.cart],
+
+          // Save discount details
+          discountType: state.discountType,
+          discountValue: state.discountValue,
+
+          totalAmount,
+          totalProfit,
+          totalCommission,
+          paymentMethod: method,
+          paymentStatus: status,
+        };
+
+        // Deduct Stock
+        state.products = state.products.map((p) => {
+          const cartItemsForProduct = state.cart.filter((c) => c.id === p.id);
+          if (cartItemsForProduct.length === 0) return p;
+          const newP = { ...p };
+          cartItemsForProduct.forEach((item) => {
+            if (item.variant && newP.variants) {
+              newP.variants = newP.variants.map((v) =>
+                v.color === item.variant
+                  ? { ...v, quantity: v.quantity - item.quantity }
+                  : v
+              );
+            } else {
+              newP.stock -= item.quantity;
+            }
+          });
+          return newP;
+        });
+
+        state.transactions.push(transaction);
+        state.cart = [];
+        state.customerName = "";
+        state.customerPhone = "";
+        state.discountValue = 0; // Reset discount
+
+        saveData();
+        closeCheckoutModal();
+        playSound(status === "paid" ? "success" : "click");
+        showToast(
+          status === "paid" ? "Thanh toán thành công!" : "Đã lưu hóa đơn nợ!",
+          status === "paid" ? "success" : "error"
+        );
+        renderPOS();
+      }
+
+      function payDebt(id) {
+        const t = state.transactions.find((x) => x.id === id);
+        if (t) {
+          showConfirm("Xác nhận khách đã thanh toán nợ cho đơn này?", () => {
+            t.paymentStatus = "paid";
+            saveData();
+            renderStats();
+            viewInvoice(id);
+            showToast("Đã cập nhật trạng thái thanh toán!");
+          });
+        }
+      }
+
+      function toggleUnpaidFilter() {
+        state.filterStats = state.filterStats === "unpaid" ? "all" : "unpaid";
+        renderStats();
+      }
+
+      function updateDateFilter(type, val) {
+        if (type === "from") state.dateFrom = val;
+        if (type === "to") state.dateTo = val;
+        renderStats();
+      }
+      function updateSearchStats(val) {
+        state.searchStats = val;
+        renderStats();
+      }
+      function clearStatsFilter() {
+        state.dateFrom = "";
+        state.dateTo = "";
+        state.searchStats = "";
+        state.filterStats = "all";
+        renderStats();
+      }
+
+      let editingId = null;
+      let tempVariants = [];
+
+      function openProductModal(id = null) {
+        editingId = id;
+        const p = id
+          ? state.products.find((x) => x.id === id)
+          : {
+              name: "",
+              importPrice: "",
+              sellPrice: "",
+              stock: 0,
+              type: "normal",
+              commission: "",
+              variants: [],
+            };
+        tempVariants = p.variants ? [...p.variants] : [];
+        if (!id && tempVariants.length === 0) tempVariants = [];
+
+        const hasVariants = tempVariants.length > 0;
+
+        const html = `
+                <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl m-auto animate-pop max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-black text-gray-700 uppercase">${
+                          id ? "Sửa Sản Phẩm" : "Thêm Mới"
+                        }</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x"></i></button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400 font-bold mb-1 text-xs uppercase">Tên sản phẩm</label>
+                            <input id="inp-name" type="text" value="${
+                              p.name
+                            }" class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                        </div>
+
+                        <!-- Type Toggle -->
+                        <div class="flex gap-3 pt-2">
+                             <label class="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-xl border-2 border-transparent hover:border-gray-200 flex-1">
+                                <input type="checkbox" id="chk-commission" class="w-5 h-5 accent-[#ffc800]" ${
+                                  p.type === "commission" ? "checked" : ""
+                                } onchange="toggleCommissionInput(this.checked)">
+                                <span class="font-bold text-gray-600 text-sm">Có hoa hồng?</span>
+                             </label>
+                             <label class="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-xl border-2 border-transparent hover:border-gray-200 flex-1">
+                                <input type="checkbox" id="chk-variants" class="w-5 h-5 accent-[#1cb0f6]" ${
+                                  hasVariants ? "checked" : ""
+                                } onchange="toggleVariantSection(this.checked)">
+                                <span class="font-bold text-gray-600 text-sm">Phân loại?</span>
+                             </label>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex-1 transition-all" id="div-import" style="${
+                              p.type === "commission" ? "display:none" : ""
+                            }">
+                                <label class="block text-gray-400 font-bold mb-1 text-xs uppercase">Giá nhập</label>
+                                <input id="inp-import" oninput="formatInput(this)" value="${formatNumber(
+                                  p.importPrice || ""
+                                )}" class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-gray-400 font-bold mb-1 text-xs uppercase">Giá bán</label>
+                                <input id="inp-sell" oninput="formatInput(this)" value="${formatNumber(
+                                  p.sellPrice || ""
+                                )}" class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                            </div>
+                        </div>
+
+                        <!-- Commission Input -->
+                        <div id="div-commission" class="${
+                          p.type === "commission" ? "" : "hidden"
+                        } animate-pop">
+                            <label class="block text-gray-400 font-bold mb-1 text-xs uppercase">Tiền hoa hồng (mỗi cái)</label>
+                            <input id="inp-comm" oninput="formatInput(this)" value="${formatNumber(
+                              p.commission || ""
+                            )}" class="w-full bg-[#fffdf0] border-2 border-[#ffc800] rounded-xl px-4 py-2.5 font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#ffc800]">
+                        </div>
+
+                        <!-- STOCK: Single or Variants -->
+                        <div id="stock-single" class="${
+                          hasVariants ? "hidden" : ""
+                        }">
+                             <label class="block text-gray-400 font-bold mb-1 text-xs uppercase">Tồn kho tổng</label>
+                             <input id="inp-stock" type="number" value="${
+                               p.stock || 0
+                             }" class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 font-bold text-gray-700 outline-none focus:border-[#1cb0f6]">
+                        </div>
+
+                        <div id="stock-variants" class="${
+                          hasVariants ? "" : "hidden"
+                        } bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                             <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-gray-500 text-xs uppercase">Phân loại (Màu sắc / Size)</span>
+                                <button onclick="addVariantRow()" class="text-[#1cb0f6] font-bold text-sm hover:underline">+ Thêm dòng</button>
+                             </div>
+                             <div id="variant-list" class="space-y-2 max-h-40 overflow-y-auto">
+                                <!-- JS will populate -->
+                             </div>
+                        </div>
+
+                        <div class="flex gap-3 mt-6 pt-4 border-t border-gray-100">
+                            <button onclick="closeModal()" class="flex-1 btn-3d bg-white border-2 border-gray-200 text-gray-500 font-bold py-3 rounded-xl">HỦY</button>
+                            <button onclick="saveProduct()" class="flex-1 btn-3d bg-[#58cc02] border-[#58a700] text-white font-bold py-3 rounded-xl">LƯU SẢN PHẨM</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        const c = el("modal-container");
+        c.innerHTML = html;
+        c.classList.remove("hidden");
+        setTimeout(() => (c.style.opacity = "1"), 10);
+        lucide.createIcons();
+
+        if (hasVariants) renderVariantRows();
+      }
+
+      function toggleCommissionInput(checked) {
+        const divComm = el("div-commission");
+        const divImp = el("div-import");
+        if (checked) {
+          divComm.classList.remove("hidden");
+          divImp.style.display = "none";
+        } else {
+          divComm.classList.add("hidden");
+          divImp.style.display = "block";
+        }
+      }
+
+      function toggleVariantSection(checked) {
+        const single = el("stock-single");
+        const variants = el("stock-variants");
+        if (checked) {
+          single.classList.add("hidden");
+          variants.classList.remove("hidden");
+          if (tempVariants.length === 0) addVariantRow();
+          else renderVariantRows();
+        } else {
+          single.classList.remove("hidden");
+          variants.classList.add("hidden");
+        }
+      }
+
+      function addVariantRow(color = "", qty = 0) {
+        tempVariants.push({ color: color, quantity: qty });
+        renderVariantRows();
+      }
+
+      function removeVariantRow(idx) {
+        tempVariants.splice(idx, 1);
+        renderVariantRows();
+      }
+
+      function updateVariantData(idx, field, value) {
+        if (field === "color") tempVariants[idx].color = value;
+        if (field === "qty") tempVariants[idx].quantity = Number(value);
+      }
+
+      function renderVariantRows() {
+        const list = el("variant-list");
+        list.innerHTML = tempVariants
+          .map(
+            (v, i) => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" placeholder="Ví dụ: Size 40, Đỏ..." value="${v.color}" oninput="updateVariantData(${i}, 'color', this.value)" class="flex-[2] bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-bold outline-none focus:border-[#1cb0f6]">
+                    <input type="number" placeholder="SL" value="${v.quantity}" oninput="updateVariantData(${i}, 'qty', this.value)" class="flex-1 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-bold outline-none focus:border-[#1cb0f6]">
+                    <button onclick="removeVariantRow(${i})" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `
+          )
+          .join("");
+        lucide.createIcons();
+      }
+
+      function saveProduct() {
+        const name = el("inp-name").value;
+        const isComm = el("chk-commission").checked;
+        const imp = isComm ? 0 : parseNumber(el("inp-import").value); // Import Price is 0 for commission items
+        const sell = parseNumber(el("inp-sell").value);
+        const comm = isComm ? parseNumber(el("inp-comm").value) : 0;
+        const isVar = el("chk-variants").checked;
+
+        if (!name || sell < 0) {
+          playSound("error");
+          return showToast("Nhập thiếu tên hoặc giá!", "error");
+        }
+
+        let stock = 0;
+        let variants = [];
+
+        if (isVar) {
+          variants = tempVariants.filter((v) => v.color.trim() !== "");
+          if (variants.length === 0) {
+            playSound("error");
+            return showToast("Nhập ít nhất 1 phân loại!", "error");
+          }
+          stock = 0;
+        } else {
+          stock = Number(el("inp-stock").value);
+        }
+
+        const oldP = editingId
+          ? state.products.find((x) => x.id === editingId)
+          : null;
+        let currentTotalStock = isVar
+          ? variants.reduce((s, v) => s + v.quantity, 0)
+          : stock;
+        let initialStock = currentTotalStock;
+
+        if (oldP) {
+          initialStock = Math.max(oldP.initialStock || 0, currentTotalStock);
+        }
+
+        const p = {
+          id: editingId || generateId(),
+          name,
+          importPrice: imp,
+          sellPrice: sell,
+          type: isComm ? "commission" : "normal",
+          commission: comm,
+          stock: isVar ? 0 : stock,
+          variants: isVar ? variants : [],
+          initialStock,
+        };
+
+        if (editingId)
+          state.products = state.products.map((x) =>
+            x.id === editingId ? p : x
+          );
+        else state.products.push(p);
+
+        saveData();
+        closeModal();
+        renderProducts();
+        playSound("success");
+        showToast("Đã lưu thành công!");
+      }
+
+      function closeModal() {
+        const c = el("modal-container");
+        c.style.opacity = "0";
+        setTimeout(() => c.classList.add("hidden"), 200);
+      }
+      function deleteProduct(id) {
+        showConfirm("Xóa sản phẩm này khỏi kho?", () => {
+          state.products = state.products.filter((p) => p.id !== id);
+          saveData();
+          renderProducts();
+          showToast("Đã xóa sản phẩm");
+        });
+      }
+      function showConfirm(msg, cb) {
+        el("confirm-msg").innerText = msg;
+        window.confirmCallback = cb;
+        const c = el("confirm-container");
+        c.classList.remove("hidden");
+        setTimeout(() => (c.style.opacity = "1"), 10);
+        el("confirm-btn-yes").onclick = () => {
+          c.style.opacity = "0";
+          setTimeout(() => c.classList.add("hidden"), 200);
+          if (window.confirmCallback) window.confirmCallback();
+        };
+      }
+      function closeConfirm(v) {
+        const c = el("confirm-container");
+        c.style.opacity = "0";
+        setTimeout(() => c.classList.add("hidden"), 200);
+      }
+
+      function viewInvoice(id) {
+        const t = state.transactions.find((x) => x.id === id);
+        if (!t) return;
+        const isUnpaid = t.paymentStatus === "unpaid";
+        const methodText =
+          t.paymentMethod === "transfer" ? "Chuyển khoản" : "Tiền mặt";
+
+        // Re-calculate discount for display based on saved type/value
+        let discountDisplay = 0;
+        let discountText = "";
+        if (t.discountType === "percent" && t.discountValue > 0) {
+          const sub = t.items.reduce((s, i) => s + i.sellPrice * i.quantity, 0);
+          discountDisplay = Math.round(sub * (t.discountValue / 100));
+          discountText = `Giảm giá (${t.discountValue}%)`;
+        } else if (t.discountValue > 0) {
+          discountDisplay = t.discountValue;
+          discountText = `Giảm giá trực tiếp`;
+        }
+
+        el("modal-container").innerHTML = `
+                <div class="bg-white w-full max-w-sm p-6 shadow-2xl m-auto animate-receipt relative font-mono text-sm overflow-hidden" onclick="event.stopPropagation()">
+                     <div class="absolute top-0 left-0 right-0 h-4 bg-[linear-gradient(135deg,#fff_50%,transparent_50%),linear-gradient(-135deg,#fff_50%,transparent_50%)] bg-[length:16px_16px]"></div>
+                     
+                     ${
+                       isUnpaid
+                         ? '<div class="absolute top-8 right-8 text-red-500/20 font-black text-6xl rotate-12 pointer-events-none border-4 border-red-500/20 px-4 py-2 rounded-xl">NỢ</div>'
+                         : ""
+                     }
+
+                     <div class="text-center mb-6 mt-2">
+                        <h2 class="text-2xl font-black uppercase tracking-widest">SportDuo</h2>
+                        <p class="text-xs text-gray-400">HÓA ĐƠN BÁN LẺ</p>
+                     </div>
+                     <div class="border-b border-dashed border-gray-300 pb-4 mb-4 space-y-1 text-gray-600">
+                        <div class="flex justify-between"><span>Ngày:</span> <span>${new Date(
+                          t.date
+                        ).toLocaleDateString("vi-VN")}</span></div>
+                        <div class="flex justify-between"><span>Giờ:</span> <span>${new Date(
+                          t.date
+                        ).toLocaleTimeString("vi-VN")}</span></div>
+                        <div class="flex justify-between"><span>Khách:</span> <span class="font-bold">${
+                          t.customerName
+                        }</span></div>
+                        ${
+                          t.customerPhone
+                            ? `<div class="flex justify-between"><span>SĐT:</span> <span>${t.customerPhone}</span></div>`
+                            : ""
+                        }
+                        <div class="flex justify-between"><span>TT:</span> <span class="font-bold uppercase">${methodText}</span></div>
+                     </div>
+                     <div class="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                        ${t.items
+                          .map(
+                            (i) => `
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="font-bold text-gray-800">${
+                                      i.name
+                                    }</div>
+                                    ${
+                                      i.variant
+                                        ? `<div class="text-[10px] text-gray-500">Màu: ${i.variant}</div>`
+                                        : ""
+                                    }
+                                    <div class="text-xs text-gray-500">${
+                                      i.quantity
+                                    } x ${formatCurrency(i.sellPrice)}</div>
+                                </div>
+                                <div class="font-bold">${formatCurrency(
+                                  i.sellPrice * i.quantity
+                                )}</div>
+                            </div>
+                        `
+                          )
+                          .join("")}
+                     </div>
+                     <div class="border-t-2 border-dashed border-gray-300 pt-4 mb-6">
+                        ${
+                          discountDisplay > 0
+                            ? `<div class="flex justify-between text-gray-500 text-xs mb-1"><span>${discountText}</span> <span>-${formatCurrency(
+                                discountDisplay
+                              )}</span></div>`
+                            : ""
+                        }
+                        <div class="flex justify-between text-xl font-black"><span>TỔNG</span> <span>${formatCurrency(
+                          t.totalAmount
+                        )}</span></div>
+                     </div>
+                     
+                     ${
+                       isUnpaid
+                         ? `
+                        <button onclick="payDebt('${t.id}')" class="w-full py-3 mb-2 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 uppercase shadow-lg shadow-red-200">THANH TOÁN NỢ</button>
+                     `
+                         : ""
+                     }
+                     
+                     <button onclick="closeModal()" class="w-full py-3 bg-gray-100 text-gray-500 font-bold rounded-xl hover:bg-gray-200 uppercase">Đóng</button>
+                     <div class="absolute bottom-0 left-0 right-0 h-4 bg-[linear-gradient(45deg,transparent_50%,#fff_50%),linear-gradient(-45deg,transparent_50%,#fff_50%)] bg-[length:16px_16px]"></div>
+                </div>
+            `;
+        const c = el("modal-container");
+        c.classList.remove("hidden");
+        setTimeout(() => (c.style.opacity = "1"), 10);
+      }
+
+      switchTab("pos");
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

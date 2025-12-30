@@ -391,7 +391,7 @@
                 Từ hàng ký gửi
               </div>
             </div>
-            <!-- Tổng nợ -->
+            <!-- Tổng nợ (Dynamic) -->
             <div
               class="bg-white p-4 rounded-3xl border-2 border-duo-gray relative group hover:border-duo-red transition-colors"
             >
@@ -399,18 +399,19 @@
                 class="text-xs text-duo-grayShade font-extrabold uppercase"
                 id="stat-label-debt"
               >
-                Tổng nợ
+                Thực thu
               </p>
               <h3
                 id="stat-debt"
-                class="text-xl md:text-2xl font-extrabold text-duo-red mt-1"
+                class="text-xl md:text-2xl font-extrabold text-duo-blue mt-1"
               >
                 0
               </h3>
               <div
+                id="stat-desc-debt"
                 class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 p-1 rounded inline-block"
               >
-                Khách chưa trả
+                Lãi + Hoa hồng
               </div>
             </div>
           </div>
@@ -1954,13 +1955,17 @@
           let revenue = 0,
             profit = 0,
             commission = 0,
-            debt = 0;
+            debt = 0,
+            debtCount = 0;
           filtered.forEach((o) => {
             if (o.status === "paid") {
               revenue += o.total;
               profit += o.profit;
               commission += o.commission;
-            } else debt += o.total;
+            } else {
+              debt += o.total;
+              debtCount++; // Đếm số đơn nợ
+            }
           });
 
           document.getElementById("stat-revenue").innerText =
@@ -1969,12 +1974,27 @@
             this.formatMoney(profit);
           document.getElementById("stat-commission").innerText =
             this.formatMoney(commission);
-          document.getElementById("stat-debt").innerText = this.formatMoney(
-            isDebtMode ? debt : profit + commission
-          );
-          document.getElementById("stat-label-debt").innerText = isDebtMode
-            ? "Tổng nợ cần thu"
-            : "Thực thu (Lãi+HH)";
+
+          // Logic hiển thị ô thứ 4
+          const statDebtVal = document.getElementById("stat-debt");
+          const statDebtLabel = document.getElementById("stat-label-debt");
+          const statDebtDesc = document.getElementById("stat-desc-debt");
+
+          if (isDebtMode) {
+            // Chế độ Sổ Nợ
+            statDebtLabel.innerText = "Tổng nợ cần thu";
+            statDebtVal.innerText = this.formatMoney(debt);
+            statDebtVal.className =
+              "text-xl md:text-2xl font-extrabold text-duo-red mt-1";
+            statDebtDesc.innerText = `${debtCount} đơn khách chưa trả`; // Hiện số lượng đơn
+          } else {
+            // Chế độ Bình thường (Xem lãi)
+            statDebtLabel.innerText = "Thực thu";
+            statDebtVal.innerText = this.formatMoney(profit + commission);
+            statDebtVal.className =
+              "text-xl md:text-2xl font-extrabold text-duo-blue mt-1";
+            statDebtDesc.innerText = "Lãi + Hoa hồng";
+          }
 
           document.getElementById("order-list").innerHTML = filtered
             .map(

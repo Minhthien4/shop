@@ -1,1337 +1,2173 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#ffffff" />
     <title>Shop Thiện Manager</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts: Nunito (Friendly, Rounded) -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Config Colors & Fonts -->
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Nunito', 'sans-serif'],
-                    },
-                    colors: {
-                        'duo-green': '#58CC02',
-                        'duo-green-dark': '#46A302',
-                        'duo-blue': '#1CB0F6',
-                        'duo-blue-dark': '#118CC0',
-                        'duo-red': '#FF4B4B',
-                        'duo-red-dark': '#EA2B2B',
-                        'duo-yellow': '#FFC800',
-                        'duo-yellow-dark': '#D9AA00',
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Nunito", "sans-serif"],
+            },
+            colors: {
+              duo: {
+                green: "#58CC02",
+                greenShade: "#46A302",
+                blue: "#1CB0F6",
+                blueShade: "#1899D6",
+                yellow: "#FFC800",
+                yellowShade: "#E5B400",
+                red: "#FF4B4B",
+                redShade: "#D93030",
+                gray: "#E5E5E5",
+                grayShade: "#CECECE",
+                text: "#4B4B4B",
+              },
+            },
+            animation: {
+              "slide-up": "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+              "slide-down": "slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+              pop: "pop 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+              shake: "shake 0.5s cubic-bezier(.36,.07,.19,.97) both",
+              "fade-out": "fadeOut 0.3s ease-out forwards",
+            },
+            keyframes: {
+              slideUp: {
+                "0%": { transform: "translateY(100%)" },
+                "100%": { transform: "translateY(0)" },
+              },
+              slideDown: {
+                "0%": { transform: "translateY(-100%)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
+              pop: {
+                "0%": { transform: "scale(0.5)", opacity: "0" },
+                "100%": { transform: "scale(1)", opacity: "1" },
+              },
+              shake: {
+                "10%, 90%": { transform: "translate3d(-1px, 0, 0)" },
+                "20%, 80%": { transform: "translate3d(2px, 0, 0)" },
+                "30%, 50%, 70%": { transform: "translate3d(-4px, 0, 0)" },
+                "40%, 60%": { transform: "translate3d(4px, 0, 0)" },
+              },
+              fadeOut: {
+                "0%": { opacity: "1" },
+                "100%": { opacity: "0" },
+              },
+            },
+          },
+        },
+      };
     </script>
+
     <style>
-        /* Custom UI Styles for Gamification Feel */
-        body {
-            background-color: #f7f7f7;
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
-        }
+      /* --- CORE MOBILE UX --- */
+      body {
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none; /* Chặn kéo nảy trang */
+      }
 
-        /* 3D Button Effect */
-        .btn-3d {
-            transition: all 0.1s;
-            border-bottom-width: 4px;
-        }
-        .btn-3d:active {
-            transform: translateY(2px);
-            border-bottom-width: 0px;
-            margin-bottom: 2px; /* Prevent layout shift */
-        }
+      /* Ẩn scrollbar nhưng vẫn cuộn được */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
 
-        /* Animations */
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-slide-up {
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+      /* Hỗ trợ vùng an toàn (Tai thỏ, Home bar) */
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top);
+      }
 
-        @keyframes popIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-in {
-            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+      /* Duolingo Button Style */
+      .btn-duo {
+        transition: all 0.1s;
+        border-bottom-width: 4px;
+      }
+      .btn-duo:active {
+        border-bottom-width: 0px;
+        transform: translateY(4px);
+      }
 
-        /* Hide Scrollbar but keep functionality */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        /* === NEW UNIFIED INPUT STYLE (BIG & CLEAR) === */
-        .input-wrapper {
-            /* bg-gray-50 helps distinguish input from white container background */
-            @apply flex items-center bg-gray-50 border-2 border-gray-300 rounded-2xl px-4 py-4 w-full transition-all duration-200 shadow-sm;
-        }
-        
-        /* Focus State - Blue Border, White BG, Shadow */
-        .input-wrapper:focus-within {
-            @apply bg-white border-duo-blue ring-4 ring-blue-100 shadow-lg transform -translate-y-0.5;
-        }
-        
-        /* Icon inside input */
-        .input-wrapper i {
-            @apply text-gray-400 w-6 h-6 flex-shrink-0 transition-colors;
-        }
-        .input-wrapper:focus-within i {
-            @apply text-duo-blue;
-        }
-        
-        /* The actual input field */
-        .input-wrapper input {
-            @apply w-full bg-transparent outline-none border-none ml-3 text-lg font-extrabold text-gray-800 placeholder-gray-400 h-full;
-        }
-
-        /* Small variant for tight spaces */
-        .input-wrapper.small {
-            @apply py-2 px-3 bg-white;
-        }
-        .input-wrapper.small input {
-            @apply text-base ml-2;
-        }
-
-        /* Toggle Card Styles */
-        .toggle-card.active {
-            @apply border-duo-green bg-green-50;
-        }
-        .toggle-card.active .icon-container {
-            @apply bg-white text-duo-green;
-        }
-        .toggle-card.active span {
-            @apply text-duo-green-dark;
-        }
-        .toggle-card.active .check-circle {
-            @apply border-duo-green bg-duo-green;
-        }
-        .toggle-card.active .check-dot {
-            @apply opacity-100 bg-white;
-        }
+      /* Modal Backdrop */
+      .backdrop {
+        background-color: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+      }
     </style>
-</head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden text-gray-800 font-sans">
+  </head>
+  <body
+    class="bg-white text-duo-text font-sans h-[100dvh] w-screen overflow-hidden fixed flex flex-col md:flex-row"
+  >
+    <!-- AUDIO CONTEXT -->
+    <div id="audio-root"></div>
 
-    <!-- SIDEBAR (PC) / BOTTOM NAV (Mobile) -->
-    <nav class="bg-white border-r-2 border-gray-200 md:w-64 md:h-full flex-shrink-0 z-40
-                fixed bottom-0 w-full h-20 md:static border-t-2 md:border-t-0 flex md:flex-col justify-around md:justify-start items-center md:pt-8 md:px-4 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] md:shadow-none pb-safe">
-        
-        <div class="hidden md:flex items-center gap-3 mb-8 px-4">
-            <div class="bg-duo-green p-2 rounded-2xl text-white shadow-md transform -rotate-6">
-                <i data-lucide="store" class="w-8 h-8"></i>
+    <!-- TOAST CONTAINER -->
+    <div
+      id="toast-container"
+      class="fixed top-4 left-0 w-full z-[100] px-4 pointer-events-none flex flex-col items-center gap-2 pt-safe"
+    ></div>
+
+    <!-- SIDEBAR (PC Only - Hidden on Mobile) -->
+    <aside
+      class="hidden md:flex flex-col w-72 bg-white border-r-2 border-duo-gray h-full z-20 px-4 py-6 shadow-sm"
+    >
+      <div class="flex items-center gap-3 mb-8 px-2">
+        <div
+          class="w-12 h-12 bg-duo-green rounded-2xl flex items-center justify-center text-white text-2xl font-black border-b-4 border-duo-greenShade"
+        >
+          S
+        </div>
+        <h1 class="font-extrabold text-2xl text-duo-green tracking-wide">
+          Shop Thiện
+        </h1>
+      </div>
+
+      <nav class="flex-1 space-y-3">
+        <button
+          onclick="app.switchTab('pos')"
+          id="nav-pc-pos"
+          class="w-full flex items-center gap-4 p-4 rounded-2xl font-bold uppercase tracking-wider text-duo-grayShade hover:bg-gray-50 border-2 border-transparent hover:border-duo-gray transition-all"
+        >
+          <i class="fa-solid fa-cash-register text-2xl"></i>
+          <span>Bán hàng</span>
+        </button>
+        <button
+          onclick="app.switchTab('products')"
+          id="nav-pc-products"
+          class="w-full flex items-center gap-4 p-4 rounded-2xl font-bold uppercase tracking-wider text-duo-grayShade hover:bg-gray-50 border-2 border-transparent hover:border-duo-gray transition-all"
+        >
+          <i class="fa-solid fa-box-open text-2xl"></i>
+          <span>Kho hàng</span>
+        </button>
+        <button
+          onclick="app.switchTab('stats')"
+          id="nav-pc-stats"
+          class="w-full flex items-center gap-4 p-4 rounded-2xl font-bold uppercase tracking-wider text-duo-grayShade hover:bg-gray-50 border-2 border-transparent hover:border-duo-gray transition-all"
+        >
+          <i class="fa-solid fa-chart-pie text-2xl"></i>
+          <span>Báo cáo</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main
+      class="flex-1 h-full overflow-hidden relative flex flex-col bg-white md:bg-[#F7F7F7]"
+    >
+      <!-- HEADER (Mobile Only) -->
+      <header
+        class="md:hidden h-16 bg-white border-b-2 border-duo-gray flex items-center justify-between px-4 sticky top-0 z-10 pt-safe box-content"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 bg-duo-green rounded-xl flex items-center justify-center text-white font-extrabold border-b-4 border-duo-greenShade text-sm"
+          >
+            S
+          </div>
+          <h1
+            class="font-extrabold text-lg text-duo-grayShade uppercase"
+            id="header-title"
+          >
+            Bán hàng
+          </h1>
+        </div>
+        <button
+          onclick="app.playSound('click'); app.toggleSearch()"
+          class="w-10 h-10 rounded-xl bg-white border-2 border-duo-gray text-duo-grayShade btn-duo flex items-center justify-center active:scale-95"
+        >
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </header>
+
+      <!-- CONTENT AREA -->
+      <div
+        id="content-area"
+        class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 md:pb-6 scroll-smooth no-scrollbar"
+      >
+        <!-- View: POS -->
+        <div
+          id="view-pos"
+          class="view-section grid grid-cols-1 md:grid-cols-3 gap-6 h-full"
+        >
+          <!-- Products Grid -->
+          <div class="md:col-span-2 flex flex-col h-full">
+            <div class="mb-4 relative">
+              <i
+                class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-duo-grayShade text-lg"
+              ></i>
+              <input
+                type="text"
+                placeholder="Tìm sản phẩm..."
+                oninput="app.renderPosProducts(this.value)"
+                class="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-duo-gray bg-white focus:border-duo-blue focus:ring-0 outline-none transition-all font-bold text-lg placeholder-gray-300"
+              />
             </div>
-            <h1 class="text-2xl font-extrabold text-gray-700 tracking-tight">Shop Thiện</h1>
+
+            <!-- Responsive Grid: 2 cols on Mobile, more on Tablet/PC -->
+            <div
+              id="pos-product-list"
+              class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-32 md:pb-0 overflow-y-auto no-scrollbar"
+            >
+              <!-- JS Render -->
+            </div>
+          </div>
+
+          <!-- Cart PC (Right Sidebar) -->
+          <div
+            class="hidden md:flex flex-col bg-white rounded-3xl border-2 border-duo-gray h-full overflow-hidden shadow-sm"
+          >
+            <div
+              class="p-4 border-b-2 border-duo-gray flex justify-between items-center bg-white"
+            >
+              <h3
+                class="font-extrabold text-lg text-duo-text uppercase tracking-wide"
+              >
+                Giỏ hàng
+              </h3>
+              <span
+                id="cart-count-pc"
+                class="bg-duo-red text-white text-sm font-bold px-3 py-1 rounded-xl"
+                >0</span
+              >
+            </div>
+            <div
+              id="cart-items-pc"
+              class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar"
+            ></div>
+            <div class="p-4 border-t-2 border-duo-gray">
+              <div class="flex justify-between mb-4 text-xl text-duo-blue">
+                <span class="font-bold">Tổng tiền:</span>
+                <span id="cart-total-pc" class="font-extrabold">0</span>
+              </div>
+              <button
+                onclick="app.openCheckoutModal()"
+                class="w-full h-14 bg-duo-blue text-white rounded-2xl font-extrabold text-lg uppercase tracking-wider btn-duo border-duo-blueShade shadow-xl"
+              >
+                Thanh toán
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Nav Items -->
-        <button onclick="app.switchTab('pos'); app.playSound('click')" id="nav-pos" class="nav-item group flex flex-col md:flex-row items-center md:w-full p-2 md:px-4 md:py-3 rounded-2xl md:hover:bg-gray-100 transition-colors">
-            <div class="nav-icon mb-1 md:mb-0 md:mr-3 text-gray-400 group-hover:text-duo-blue transition-colors">
-                <i data-lucide="shopping-cart" class="w-6 h-6 md:w-7 md:h-7"></i>
-            </div>
-            <span class="text-[10px] md:text-lg font-extrabold text-gray-400 group-hover:text-duo-blue transition-colors uppercase md:normal-case tracking-wide md:tracking-normal">Bán hàng</span>
-        </button>
+        <!-- View: PRODUCTS -->
+        <div id="view-products" class="view-section hidden space-y-4">
+          <div class="flex justify-between items-center">
+            <h2 class="font-extrabold text-2xl text-duo-text">Kho hàng</h2>
+            <button
+              onclick="app.openProductModal()"
+              class="h-12 px-6 bg-duo-green text-white rounded-2xl font-extrabold uppercase tracking-wider btn-duo border-duo-greenShade flex items-center gap-2"
+            >
+              <i class="fa-solid fa-plus"></i>
+              <span class="hidden md:inline">Thêm mới</span>
+            </button>
+          </div>
+          <div
+            id="inventory-list"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-20"
+          >
+            <!-- JS Render -->
+          </div>
+        </div>
 
-        <button onclick="app.switchTab('products'); app.playSound('click')" id="nav-products" class="nav-item group flex flex-col md:flex-row items-center md:w-full p-2 md:px-4 md:py-3 rounded-2xl md:hover:bg-gray-100 transition-colors">
-            <div class="nav-icon mb-1 md:mb-0 md:mr-3 text-gray-400 group-hover:text-duo-green transition-colors">
-                <i data-lucide="package" class="w-6 h-6 md:w-7 md:h-7"></i>
+        <!-- View: STATS -->
+        <div id="view-stats" class="view-section hidden space-y-6">
+          <div class="flex flex-col md:flex-row gap-3">
+            <div class="flex-1 relative">
+              <i
+                class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              ></i>
+              <input
+                type="text"
+                id="stats-search"
+                placeholder="Tìm đơn, khách..."
+                oninput="app.filterStats()"
+                class="w-full h-12 pl-12 pr-4 rounded-2xl border-2 border-duo-gray bg-white focus:outline-none focus:border-duo-blue font-bold"
+              />
             </div>
-            <span class="text-[10px] md:text-lg font-extrabold text-gray-400 group-hover:text-duo-green transition-colors uppercase md:normal-case tracking-wide md:tracking-normal">Kho hàng</span>
-        </button>
+            <div class="flex gap-2">
+              <select
+                id="stats-month"
+                onchange="app.filterStats()"
+                class="flex-1 h-12 px-4 rounded-2xl border-2 border-duo-gray bg-white focus:outline-none font-bold text-duo-text"
+              >
+                <!-- Options JS -->
+              </select>
+              <button
+                onclick="app.toggleDebtFilter()"
+                id="btn-debt-filter"
+                class="flex-1 h-12 px-6 rounded-2xl border-2 border-duo-gray bg-white font-extrabold text-duo-grayShade hover:text-duo-red hover:border-duo-red transition-all border-dashed uppercase btn-duo"
+              >
+                Sổ Nợ
+              </button>
+            </div>
+          </div>
 
-        <button onclick="app.switchTab('stats'); app.playSound('click')" id="nav-stats" class="nav-item group flex flex-col md:flex-row items-center md:w-full p-2 md:px-4 md:py-3 rounded-2xl md:hover:bg-gray-100 transition-colors">
-            <div class="nav-icon mb-1 md:mb-0 md:mr-3 text-gray-400 group-hover:text-duo-yellow transition-colors">
-                <i data-lucide="bar-chart-2" class="w-6 h-6 md:w-7 md:h-7"></i>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Doanh thu -->
+            <div
+              class="bg-white p-4 rounded-3xl border-2 border-duo-gray relative group hover:border-duo-blue transition-colors"
+            >
+              <p class="text-xs text-duo-grayShade font-extrabold uppercase">
+                Doanh thu
+              </p>
+              <h3
+                id="stat-revenue"
+                class="text-xl md:text-2xl font-extrabold text-duo-blue mt-1"
+              >
+                0
+              </h3>
+              <div
+                class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 p-1 rounded inline-block"
+              >
+                Tổng tiền thu (Đã trừ giảm giá)
+              </div>
             </div>
-            <span class="text-[10px] md:text-lg font-extrabold text-gray-400 group-hover:text-duo-yellow transition-colors uppercase md:normal-case tracking-wide md:tracking-normal">Thống kê</span>
-        </button>
+            <!-- Lợi nhuận -->
+            <div
+              class="bg-white p-4 rounded-3xl border-2 border-duo-gray relative group hover:border-duo-green transition-colors"
+            >
+              <p class="text-xs text-duo-grayShade font-extrabold uppercase">
+                Lợi nhuận
+              </p>
+              <h3
+                id="stat-profit"
+                class="text-xl md:text-2xl font-extrabold text-duo-green mt-1"
+              >
+                0
+              </h3>
+              <div
+                class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 p-1 rounded inline-block"
+              >
+                (Giá bán - Giá vốn) - Giảm giá
+              </div>
+            </div>
+            <!-- Hoa hồng -->
+            <div
+              class="bg-white p-4 rounded-3xl border-2 border-duo-gray relative group hover:border-duo-yellow transition-colors"
+            >
+              <p class="text-xs text-duo-grayShade font-extrabold uppercase">
+                Hoa hồng
+              </p>
+              <h3
+                id="stat-commission"
+                class="text-xl md:text-2xl font-extrabold text-duo-yellow mt-1"
+              >
+                0
+              </h3>
+              <div
+                class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 p-1 rounded inline-block"
+              >
+                Từ hàng ký gửi
+              </div>
+            </div>
+            <!-- Tổng nợ -->
+            <div
+              class="bg-white p-4 rounded-3xl border-2 border-duo-gray relative group hover:border-duo-red transition-colors"
+            >
+              <p
+                class="text-xs text-duo-grayShade font-extrabold uppercase"
+                id="stat-label-debt"
+              >
+                Tổng nợ
+              </p>
+              <h3
+                id="stat-debt"
+                class="text-xl md:text-2xl font-extrabold text-duo-red mt-1"
+              >
+                0
+              </h3>
+              <div
+                class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 p-1 rounded inline-block"
+              >
+                Khách chưa trả
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white rounded-3xl border-2 border-duo-gray overflow-hidden mb-20 md:mb-0"
+          >
+            <div
+              class="p-4 border-b-2 border-duo-gray bg-gray-50 font-extrabold text-duo-grayShade uppercase tracking-wider text-sm"
+            >
+              Lịch sử đơn hàng
+            </div>
+            <div id="order-list" class="divide-y-2 divide-duo-gray"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- MOBILE NAV (Bottom Bar) -->
+    <nav
+      class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t-2 border-duo-gray flex items-end h-[5.5rem] z-30 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+    >
+      <button
+        onclick="app.switchTab('pos')"
+        class="nav-item-mobile relative flex-1 h-full flex flex-col items-center justify-center text-duo-grayShade active:scale-95 transition-transform pb-2"
+      >
+        <i class="fa-solid fa-cash-register text-2xl mb-1"></i>
+        <span class="text-[10px] font-extrabold uppercase">Bán hàng</span>
+        <span
+          id="cart-badge-mobile"
+          class="absolute top-3 right-[25%] w-5 h-5 bg-duo-red text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden border-2 border-white"
+          >0</span
+        >
+      </button>
+      <button
+        onclick="app.switchTab('products')"
+        class="nav-item-mobile relative flex-1 h-full flex flex-col items-center justify-center text-duo-grayShade active:scale-95 transition-transform pb-2"
+      >
+        <i class="fa-solid fa-box-open text-2xl mb-1"></i>
+        <span class="text-[10px] font-extrabold uppercase">Kho hàng</span>
+      </button>
+      <button
+        onclick="app.switchTab('stats')"
+        class="nav-item-mobile relative flex-1 h-full flex flex-col items-center justify-center text-duo-grayShade active:scale-95 transition-transform pb-2"
+      >
+        <i class="fa-solid fa-chart-pie text-2xl mb-1"></i>
+        <span class="text-[10px] font-extrabold uppercase">Báo cáo</span>
+      </button>
     </nav>
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 h-full overflow-hidden relative bg-[#f7f7f7] pb-24 md:pb-0">
-        
-        <!-- === TAB: POS (BÁN HÀNG) === -->
-        <div id="tab-pos" class="tab-content h-full flex flex-col md:flex-row hidden">
-            <!-- Left: Product Grid -->
-            <div class="flex-1 flex flex-col h-full relative">
-                <!-- Header & Search -->
-                <div class="bg-white p-4 md:p-6 shadow-sm z-10 sticky top-0">
-                    <div class="flex flex-col gap-3">
-                        <h2 class="text-2xl font-extrabold text-gray-700 hidden md:block">Bán hàng</h2>
-                        <div class="input-wrapper">
-                            <i data-lucide="search"></i>
-                            <input type="text" id="pos-search" placeholder="Tìm tên sản phẩm..." 
-                                   inputmode="search"
-                                   oninput="app.renderPosProducts(this.value)">
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Grid -->
-                <div id="pos-product-grid" class="flex-1 overflow-y-auto p-4 pb-32 md:pb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 content-start">
-                    <!-- JS will inject products here -->
-                </div>
-            </div>
-
-            <!-- Right: Cart (Bottom Sheet on Mobile handled by CSS/JS, but here we split layout) -->
-            <div class="md:w-96 bg-white border-l-2 border-gray-200 flex flex-col shadow-xl z-20 absolute md:static bottom-0 w-full h-[85vh] md:h-full transform translate-y-[110%] md:translate-y-0 transition-transform duration-300 rounded-t-3xl md:rounded-none" id="cart-panel">
-                <!-- Mobile Drag Handle -->
-                <div class="md:hidden w-full bg-white rounded-t-3xl flex justify-center pt-3 pb-1 cursor-pointer border-b border-gray-100" onclick="app.toggleCartMobile()">
-                    <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
-                </div>
-
-                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white md:bg-gray-50">
-                    <h2 class="text-xl font-extrabold text-gray-700 flex items-center gap-2">
-                        <i data-lucide="shopping-bag" class="text-duo-blue w-6 h-6"></i>
-                        Giỏ hàng 
-                        <span id="cart-count" class="bg-duo-red text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm">0</span>
-                    </h2>
-                    <button onclick="app.confirmAction('Bạn muốn xóa hết giỏ hàng?', () => app.clearCart())" class="text-gray-400 hover:text-duo-red font-bold text-sm flex items-center gap-1 transition-colors">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i> Xóa
-                    </button>
-                </div>
-
-                <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
-                    <!-- Cart Items injected here -->
-                    <div class="flex flex-col items-center justify-center h-full text-gray-300">
-                        <i data-lucide="shopping-cart" class="w-16 h-16 mb-2 opacity-50"></i>
-                        <p class="font-bold">Chưa có sản phẩm</p>
-                    </div>
-                </div>
-
-                <!-- Cart Footer -->
-                <div class="p-5 bg-gray-50 border-t-2 border-gray-200 pb-28 md:pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-gray-500 font-bold text-sm uppercase tracking-wide">Tạm tính</span>
-                        <span class="font-bold text-lg text-gray-700" id="cart-subtotal">0</span>
-                    </div>
-                    
-                    <!-- Discount Row -->
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-gray-500 font-bold text-sm uppercase tracking-wide">Giảm giá</span>
-                            <button onclick="app.toggleDiscountType(); app.playSound('click')" id="discount-type-btn" class="px-2 py-1 bg-white border-2 border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:border-duo-blue hover:text-duo-blue btn-3d">VNĐ</button>
-                        </div>
-                        <div class="w-32">
-                             <div class="input-wrapper small !py-1 !border-dashed !border-gray-300 focus-within:!border-duo-red focus-within:!ring-red-50">
-                                <span class="text-duo-red mr-1 font-bold">-</span>
-                                <input type="text" id="cart-discount" readonly 
-                                    class="!text-right !text-duo-red !ml-0"
-                                    value="0" onclick="app.openNumpad('cart-discount')">
-                             </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center mb-5 pt-3 border-t-2 border-gray-200">
-                        <span class="text-gray-800 font-extrabold text-xl">Thành tiền</span>
-                        <span class="font-extrabold text-3xl text-duo-blue" id="cart-total">0</span>
-                    </div>
-
-                    <button onclick="app.openCheckoutModal()" class="w-full bg-duo-green hover:bg-duo-green-dark text-white font-extrabold py-4 rounded-2xl btn-3d border-duo-green-dark shadow-lg flex justify-center items-center gap-3 text-lg group">
-                        <span class="group-hover:scale-105 transition-transform">THANH TOÁN</span>
-                        <i data-lucide="arrow-right" class="w-6 h-6 group-hover:translate-x-1 transition-transform"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Cart Toggle Button (Visible when cart is hidden on mobile) -->
-            <button onclick="app.toggleCartMobile(); app.playSound('pop')" class="md:hidden fixed bottom-24 right-4 bg-duo-blue text-white p-4 pr-6 pl-5 rounded-full shadow-2xl btn-3d border-duo-blue-dark z-30 flex items-center gap-3 animate-pop-in">
-                <div class="relative">
-                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
-                    <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-duo-red text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 border-duo-blue">0</span>
-                </div>
-                <span id="mobile-cart-total" class="font-extrabold text-lg">0</span>
-            </button>
-        </div>
-
-        <!-- === TAB: PRODUCTS (KHO HÀNG) === -->
-        <div id="tab-products" class="tab-content h-full flex flex-col hidden">
-            <div class="p-4 bg-white border-b border-gray-200 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-                <h2 class="text-2xl font-extrabold text-gray-700">Kho hàng</h2>
-                <button onclick="app.openProductModal(); app.playSound('click')" class="bg-duo-green hover:bg-duo-green-dark text-white font-bold py-2 px-4 rounded-xl btn-3d border-duo-green-dark flex items-center gap-2 shadow-md">
-                    <i data-lucide="plus" class="w-5 h-5"></i>
-                    <span class="hidden md:inline">Thêm mới</span>
-                </button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-4 pb-24 md:pb-4">
-                 <div id="inventory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                     <!-- Inventory Items -->
-                 </div>
-            </div>
-        </div>
-
-        <!-- === TAB: STATS (THỐNG KÊ) === -->
-        <div id="tab-stats" class="tab-content h-full flex flex-col hidden bg-gray-50">
-             <div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-                <div class="flex flex-col justify-between gap-3">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-extrabold text-gray-700">Thống kê</h2>
-                        <div class="flex gap-2">
-                            <select id="stats-month" onchange="app.renderStats(); app.playSound('click')" class="bg-white font-bold text-gray-600 rounded-xl px-3 py-2 outline-none border-2 border-gray-300 focus:border-duo-blue">
-                                <!-- Months injected via JS -->
-                            </select>
-                            <button onclick="app.toggleDebtFilter(); app.playSound('click')" id="btn-debt-filter" class="whitespace-nowrap bg-white border-2 border-gray-300 text-gray-500 font-bold px-4 py-2 rounded-xl btn-3d transition-all">
-                                Sổ Nợ
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Stats Search -->
-                    <div class="input-wrapper">
-                        <i data-lucide="search"></i>
-                        <input type="text" id="stats-search" placeholder="Tìm theo Mã, Tên, SĐT, Ngày..." 
-                               oninput="app.renderStats()">
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-4 pb-24 md:pb-4">
-                <!-- Dashboard Cards -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                    <div class="bg-white p-4 rounded-2xl border-b-4 border-gray-200 shadow-sm">
-                        <div class="flex items-center gap-2 mb-1 opacity-70">
-                            <i data-lucide="dollar-sign" class="w-4 h-4 text-duo-blue"></i>
-                            <p class="text-gray-500 text-xs font-bold uppercase">Doanh thu</p>
-                        </div>
-                        <p class="text-xl md:text-2xl font-extrabold text-duo-blue truncate" id="stat-revenue">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border-b-4 border-gray-200 shadow-sm">
-                         <div class="flex items-center gap-2 mb-1 opacity-70">
-                            <i data-lucide="trending-up" class="w-4 h-4 text-duo-green"></i>
-                            <p class="text-gray-500 text-xs font-bold uppercase">Lợi nhuận</p>
-                        </div>
-                        <p class="text-xl md:text-2xl font-extrabold text-duo-green truncate" id="stat-profit">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border-b-4 border-gray-200 shadow-sm">
-                         <div class="flex items-center gap-2 mb-1 opacity-70">
-                            <i data-lucide="award" class="w-4 h-4 text-duo-yellow"></i>
-                            <p class="text-gray-500 text-xs font-bold uppercase">Hoa hồng</p>
-                        </div>
-                        <p class="text-xl md:text-2xl font-extrabold text-duo-yellow truncate" id="stat-commission">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border-b-4 border-gray-200 shadow-sm">
-                         <div class="flex items-center gap-2 mb-1 opacity-70">
-                            <i data-lucide="wallet" class="w-4 h-4 text-gray-500"></i>
-                            <p class="text-gray-500 text-xs font-bold uppercase" id="stat-last-label">Thực thu</p>
-                        </div>
-                        <p class="text-xl md:text-2xl font-extrabold text-gray-700 truncate" id="stat-net">0</p>
-                    </div>
-                </div>
-
-                <!-- History List -->
-                <h3 class="font-extrabold text-gray-600 mb-3 text-lg ml-1">Lịch sử đơn hàng</h3>
-                <div id="order-history-list" class="space-y-3">
-                    <!-- Orders injected here -->
-                </div>
-            </div>
-        </div>
-
-    </main>
+    <!-- FLOATING CART BUTTON (Mobile) -->
+    <button
+      onclick="app.openCartMobile()"
+      id="fab-cart"
+      class="md:hidden fixed bottom-28 right-4 w-16 h-16 bg-duo-blue text-white rounded-2xl shadow-xl flex items-center justify-center z-20 hidden btn-duo border-duo-blueShade animate-pop"
+    >
+      <i class="fa-solid fa-cart-shopping text-2xl"></i>
+      <span
+        id="fab-count"
+        class="absolute -top-2 -right-2 w-7 h-7 bg-duo-red text-white text-xs font-bold rounded-xl border-2 border-white flex items-center justify-center"
+        >0</span
+      >
+    </button>
 
     <!-- === MODALS === -->
 
-    <!-- CUSTOM CONFIRM MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 relative z-10 animate-pop-in text-center">
-            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-duo-yellow-dark">
-                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
-            </div>
-            <h3 class="text-xl font-extrabold text-gray-700 mb-2">Xác nhận</h3>
-            <p class="text-gray-500 font-bold mb-6" id="confirm-msg">Bạn có chắc chắn không?</p>
-            <div class="flex gap-3">
-                <button onclick="app.closeConfirm()" class="flex-1 bg-gray-100 text-gray-500 font-extrabold py-3 rounded-2xl btn-3d hover:bg-gray-200">Hủy</button>
-                <button id="confirm-btn-yes" class="flex-1 bg-duo-green text-white font-extrabold py-3 rounded-2xl btn-3d border-duo-green-dark shadow-md hover:bg-duo-green-dark">Đồng ý</button>
-            </div>
+    <!-- 1. NUMPAD (Responsive) -->
+    <div id="numpad-sheet" class="fixed inset-0 z-50 hidden">
+      <div
+        class="absolute inset-0 bg-transparent"
+        onclick="app.closeNumpad()"
+      ></div>
+      <!-- Mobile: Bottom Sheet | Desktop: Floating Widget -->
+      <div
+        class="absolute bottom-0 left-0 w-full md:w-80 md:left-auto md:right-8 md:bottom-8 md:rounded-3xl bg-white rounded-t-3xl shadow-2xl animate-slide-up overflow-hidden border-2 border-duo-gray pb-safe"
+      >
+        <div class="flex justify-center p-2">
+          <div class="h-1 w-12 bg-duo-gray rounded-full"></div>
         </div>
+        <div class="grid grid-cols-3 gap-2 p-2 bg-white pb-4">
+          <!-- Keys 1-9 -->
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('1')"
+          >
+            1
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('2')"
+          >
+            2
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('3')"
+          >
+            3
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('4')"
+          >
+            4
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('5')"
+          >
+            5
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('6')"
+          >
+            6
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('7')"
+          >
+            7
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('8')"
+          >
+            8
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('9')"
+          >
+            9
+          </button>
+          <!-- Controls -->
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-duo-red border-2 border-duo-redShade font-extrabold text-2xl text-white btn-duo flex items-center justify-center"
+            onclick="app.numpadDelete()"
+          >
+            <i class="fa-solid fa-delete-left"></i>
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-white border-2 border-duo-gray font-extrabold text-2xl text-duo-text btn-duo border-duo-grayShade"
+            onclick="app.numpadInput('0')"
+          >
+            0
+          </button>
+          <button
+            class="h-14 md:h-16 rounded-2xl bg-duo-green border-2 border-duo-greenShade text-white font-extrabold text-xl btn-duo"
+            onclick="app.closeNumpad()"
+          >
+            OK
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 1. Custom Numpad (Bottom Sheet) -->
-    <div id="numpad-modal" class="fixed inset-0 z-[60] hidden">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="app.closeNumpad()"></div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl animate-slide-up p-4 pb-8 md:w-[400px] md:left-1/2 md:-translate-x-1/2 md:bottom-10 md:rounded-3xl">
-            <!-- Numpad Header Display -->
-            <div class="mb-4 bg-gray-100 rounded-2xl p-4 flex justify-between items-center border-2 border-gray-200">
-                <span id="numpad-label" class="text-gray-400 font-bold text-xs uppercase tracking-wider">Nhập số lượng</span>
-                <span id="numpad-display" class="text-3xl font-extrabold text-gray-800 tracking-tight"></span>
-            </div>
-            <!-- Grid Keys -->
-            <div class="grid grid-cols-3 gap-3">
-                <button onclick="app.numpadPress('1')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">1</button>
-                <button onclick="app.numpadPress('2')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">2</button>
-                <button onclick="app.numpadPress('3')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">3</button>
-                <button onclick="app.numpadPress('4')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">4</button>
-                <button onclick="app.numpadPress('5')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">5</button>
-                <button onclick="app.numpadPress('6')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">6</button>
-                <button onclick="app.numpadPress('7')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">7</button>
-                <button onclick="app.numpadPress('8')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">8</button>
-                <button onclick="app.numpadPress('9')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">9</button>
-                <button onclick="app.numpadPress('C')" class="bg-red-50 border-b-4 border-red-200 text-duo-red rounded-2xl py-3 font-bold active:border-b-0 active:translate-y-1 transition-all">C</button>
-                <button onclick="app.numpadPress('0')" class="bg-white border-b-4 border-gray-200 rounded-2xl py-3 text-2xl font-bold text-gray-700 active:border-b-0 active:translate-y-1 transition-all">0</button>
-                <button onclick="app.numpadPress('BACK')" class="bg-gray-100 border-b-4 border-gray-200 rounded-2xl py-3 text-gray-600 font-bold active:border-b-0 active:translate-y-1 transition-all flex justify-center items-center"><i data-lucide="delete"></i></button>
-                <button onclick="app.numpadFinish()" class="col-span-3 bg-duo-green border-b-4 border-duo-green-dark text-white rounded-2xl py-4 text-xl font-extrabold active:border-b-0 active:translate-y-1 transition-all mt-2 shadow-lg shadow-green-200">XONG</button>
-            </div>
+    <!-- 2. PRODUCT MODAL -->
+    <div
+      id="modal-product"
+      class="fixed inset-0 z-40 hidden flex items-center justify-center backdrop p-4 animate-fade-in"
+    >
+      <div
+        class="bg-white w-full max-w-md rounded-3xl shadow-2xl animate-pop overflow-hidden flex flex-col max-h-[85dvh] border-2 border-duo-gray"
+      >
+        <div
+          class="p-4 border-b-2 border-duo-gray flex justify-between items-center bg-gray-50"
+        >
+          <h3
+            class="font-extrabold text-lg text-duo-text uppercase tracking-wide"
+            id="modal-product-title"
+          >
+            Sản phẩm
+          </h3>
+          <button
+            onclick="app.closeModal('modal-product')"
+            class="w-10 h-10 rounded-xl bg-white border-2 border-duo-gray text-duo-grayShade flex items-center justify-center btn-duo"
+          >
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
+        <div class="p-6 overflow-y-auto space-y-4 no-scrollbar">
+          <input type="hidden" id="prod-id" />
+          <div>
+            <label
+              class="block text-xs font-extrabold text-duo-grayShade uppercase mb-2"
+              >Tên sản phẩm</label
+            >
+            <input
+              type="text"
+              id="prod-name"
+              class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-bold text-lg"
+            />
+          </div>
+          <div class="flex gap-4">
+            <div
+              class="flex-1 border-2 border-duo-gray p-3 rounded-xl flex items-center gap-3 cursor-pointer bg-white"
+              onclick="app.toggleConsignment()"
+            >
+              <div
+                class="w-12 h-6 bg-duo-gray rounded-full relative transition-colors"
+                id="toggle-consignment-bg"
+              >
+                <div
+                  class="w-6 h-6 bg-white rounded-full absolute top-0 left-0 border-2 border-duo-gray transition-transform scale-110"
+                  id="toggle-consignment-dot"
+                ></div>
+              </div>
+              <span class="text-xs font-extrabold uppercase text-duo-grayShade"
+                >Ký gửi</span
+              >
+            </div>
+            <div
+              class="flex-1 border-2 border-duo-gray p-3 rounded-xl flex items-center gap-3 cursor-pointer bg-white"
+              onclick="app.toggleVariants()"
+            >
+              <div
+                class="w-12 h-6 bg-duo-gray rounded-full relative transition-colors"
+                id="toggle-variant-bg"
+              >
+                <div
+                  class="w-6 h-6 bg-white rounded-full absolute top-0 left-0 border-2 border-duo-gray transition-transform scale-110"
+                  id="toggle-variant-dot"
+                ></div>
+              </div>
+              <span class="text-xs font-extrabold uppercase text-duo-grayShade"
+                >Phân loại</span
+              >
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-extrabold text-duo-grayShade uppercase mb-2"
+                id="label-cost"
+                >Giá vốn</label
+              >
+              <input
+                type="text"
+                inputmode="none"
+                readonly
+                id="prod-cost"
+                oninput="app.calcProfitPreview()"
+                onclick="app.openNumpad(this, 'money')"
+                class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-extrabold text-lg"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-extrabold text-duo-grayShade uppercase mb-2"
+                >Giá bán</label
+              >
+              <input
+                type="text"
+                inputmode="none"
+                readonly
+                id="prod-price"
+                oninput="app.calcProfitPreview()"
+                onclick="app.openNumpad(this, 'money')"
+                class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-extrabold text-duo-blue text-lg"
+              />
+            </div>
+          </div>
+
+          <!-- PROFIT PREVIEW -->
+          <div
+            class="bg-gray-50 p-3 rounded-xl border-2 border-dashed border-duo-gray flex justify-between items-center"
+          >
+            <span class="text-xs font-extrabold text-duo-grayShade uppercase"
+              >Tiền lời dự kiến</span
+            >
+            <span
+              id="prod-profit-preview"
+              class="font-black text-duo-green text-lg"
+              >0</span
+            >
+          </div>
+
+          <div id="section-simple-stock">
+            <label
+              class="block text-xs font-extrabold text-duo-grayShade uppercase mb-2"
+              >Tồn kho</label
+            >
+            <input
+              type="text"
+              inputmode="none"
+              readonly
+              id="prod-stock"
+              onclick="app.openNumpad(this, 'number')"
+              class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-extrabold text-lg"
+            />
+          </div>
+          <div id="section-variants" class="hidden space-y-3">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-extrabold text-duo-grayShade uppercase"
+                >Danh sách (Màu/Size)</label
+              >
+              <button
+                onclick="app.addVariantRow()"
+                class="text-xs font-bold text-duo-blue uppercase hover:underline"
+              >
+                + Thêm
+              </button>
+            </div>
+            <div id="variant-list" class="space-y-2"></div>
+          </div>
+        </div>
+        <div
+          class="p-4 border-t-2 border-duo-gray bg-gray-50 flex gap-3 pb-safe"
+        >
+          <button
+            onclick="app.saveProduct()"
+            class="w-full h-12 bg-duo-green text-white rounded-2xl font-extrabold uppercase tracking-wider btn-duo border-duo-greenShade"
+          >
+            Lưu
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 2. Product Add/Edit Modal (REDESIGNED V3 - Clean & Simple) -->
-    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center pointer-events-none">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity" onclick="app.closeProductModal()"></div>
-        <div class="bg-gray-50 w-full md:w-[550px] h-[95vh] md:h-auto md:max-h-[90vh] rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col pointer-events-auto animate-slide-up overflow-hidden">
-            <!-- Header -->
-            <div class="p-5 bg-white border-b border-gray-100 flex justify-between items-center shadow-sm z-10">
-                <h3 class="text-xl font-extrabold text-gray-700" id="prod-modal-title">Thêm sản phẩm</h3>
-                <button onclick="app.closeProductModal()" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <!-- 3. VARIANT SELECT MODAL -->
+    <div
+      id="modal-select-variant"
+      class="fixed inset-0 z-40 hidden flex items-center justify-center backdrop p-4"
+    >
+      <div
+        class="bg-white w-full max-w-sm rounded-3xl shadow-2xl animate-pop p-6 border-2 border-duo-gray max-h-[80dvh] overflow-y-auto"
+      >
+        <h3
+          class="font-extrabold text-xl text-center mb-6 text-duo-text"
+          id="select-variant-title"
+        >
+          Chọn loại
+        </h3>
+        <div id="select-variant-list" class="grid grid-cols-2 gap-3 mb-6"></div>
+        <button
+          onclick="app.closeModal('modal-select-variant')"
+          class="w-full h-12 bg-gray-200 text-duo-grayShade rounded-2xl font-extrabold uppercase btn-duo border-gray-300"
+        >
+          Đóng
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. CHECKOUT MODAL -->
+    <div
+      id="modal-checkout"
+      class="fixed inset-0 z-40 hidden flex items-end md:items-center justify-center backdrop"
+    >
+      <div
+        class="bg-white w-full md:max-w-lg md:rounded-3xl rounded-t-3xl shadow-2xl animate-slide-up md:animate-pop overflow-hidden h-[90dvh] md:h-auto flex flex-col border-2 border-duo-gray"
+      >
+        <div
+          class="p-4 border-b-2 border-duo-gray bg-gray-50 flex justify-between items-center rounded-t-3xl"
+        >
+          <h3
+            class="font-extrabold text-lg text-duo-text uppercase tracking-wide"
+          >
+            Thanh toán
+          </h3>
+          <button
+            onclick="app.closeModal('modal-checkout')"
+            class="w-10 h-10 rounded-xl bg-white border-2 border-duo-gray flex items-center justify-center btn-duo"
+          >
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2 md:col-span-1">
+              <label
+                class="block text-xs font-extrabold text-duo-grayShade uppercase mb-2"
+                >Tên khách</label
+              >
+              <input
+                type="text"
+                id="cust-name"
+                class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-bold text-lg"
+              />
             </div>
-            
-            <div class="flex-1 overflow-y-auto p-5 space-y-6">
-                <input type="hidden" id="prod-id">
-                
-                <!-- Section 1: Basic Info -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                    <h4 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4"></i> Thông tin chung</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-gray-500 font-bold mb-2 text-sm uppercase">Tên sản phẩm</label>
-                            <div class="input-wrapper">
-                                <i data-lucide="tag"></i>
-                                <input type="text" id="prod-name" placeholder="Ví dụ: Áo thun...">
-                            </div>
-                        </div>
-                        <!-- Options Toggles (Inline) -->
-                        <div class="flex gap-3">
-                            <label class="flex-1 flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-duo-green transition-colors bg-white">
-                                <input type="checkbox" id="prod-is-commission" onchange="app.toggleCommissionMode()" class="w-5 h-5 text-duo-green rounded focus:ring-duo-green mr-2">
-                                <span class="text-sm font-bold text-gray-600">Hàng ký gửi</span>
-                            </label>
-                            <label class="flex-1 flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-duo-blue transition-colors bg-white">
-                                <input type="checkbox" id="prod-has-variants" onchange="app.toggleVariantMode()" class="w-5 h-5 text-duo-blue rounded focus:ring-duo-blue mr-2">
-                                <span class="text-sm font-bold text-gray-600">Có phân loại</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-span-2 md:col-span-1">
+              <label
+                class="block text-xs font-extrabold text-duo-grayShade uppercase mb-2"
+                >SĐT</label
+              >
+              <input
+                type="text"
+                inputmode="none"
+                readonly
+                id="cust-phone"
+                onclick="app.openNumpad(this, 'phone')"
+                class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-extrabold text-lg"
+              />
+            </div>
+          </div>
 
-                <!-- Section 2: Pricing -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                    <h4 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="dollar-sign" class="w-4 h-4"></i> Thiết lập giá</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="cursor-pointer" onclick="app.openNumpad('prod-cost')">
-                            <label class="block text-gray-500 font-bold mb-2 text-sm uppercase" id="lbl-cost">Giá nhập</label>
-                            <div class="input-wrapper">
-                                <i data-lucide="trending-down"></i>
-                                <input type="text" id="prod-cost" readonly class="cursor-pointer text-duo-yellow-dark" placeholder="0">
-                            </div>
-                        </div>
-                        <div class="cursor-pointer" onclick="app.openNumpad('prod-price')">
-                            <label class="block text-gray-500 font-bold mb-2 text-sm uppercase">Giá bán</label>
-                            <div class="input-wrapper">
-                                <i data-lucide="dollar-sign"></i>
-                                <input type="text" id="prod-price" readonly class="cursor-pointer text-duo-blue" placeholder="0">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 3: Stock / Variants -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                    <h4 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="box" class="w-4 h-4"></i> Kho hàng</h4>
-                    
-                    <!-- Simple Stock -->
-                    <div id="simple-stock-area" class="cursor-pointer" onclick="app.openNumpad('prod-stock')">
-                        <label class="block text-gray-500 font-bold mb-2 text-sm uppercase">Số lượng tồn kho</label>
-                        <div class="input-wrapper">
-                            <i data-lucide="layers"></i>
-                            <input type="text" id="prod-stock" readonly class="cursor-pointer" placeholder="0">
-                        </div>
-                    </div>
-
-                    <!-- Variants Area -->
-                    <div id="variants-area" class="hidden">
-                        <div class="space-y-3" id="variants-list">
-                            <!-- Rows -->
-                        </div>
-                        <button onclick="app.addVariantRow()" class="mt-4 w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold text-sm hover:border-duo-blue hover:text-duo-blue transition-colors flex justify-center items-center gap-2">
-                            <i data-lucide="plus" class="w-4 h-4"></i> Thêm phân loại (Size/Màu)
-                        </button>
-                    </div>
-                </div>
+          <div
+            class="bg-white border-2 border-duo-gray p-4 rounded-2xl space-y-4"
+          >
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-duo-grayShade font-bold">Tổng tiền hàng</span>
+              <span
+                id="checkout-subtotal"
+                class="font-extrabold text-duo-text text-lg"
+                >0</span
+              >
             </div>
 
-            <!-- Footer Action -->
-            <div class="p-5 border-t border-gray-100 bg-white pb-safe z-10">
-                <button onclick="app.saveProduct()" class="w-full bg-duo-green text-white font-extrabold py-4 rounded-2xl btn-3d border-duo-green-dark shadow-xl text-xl tracking-wide flex items-center justify-center gap-2 group">
-                    <i data-lucide="check" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
-                    LƯU SẢN PHẨM
+            <!-- DISCOUNT UI -->
+            <div class="flex items-end gap-3">
+              <div class="flex-1">
+                <label
+                  class="text-xs font-extrabold text-duo-grayShade uppercase mb-1"
+                  >Giảm giá</label
+                >
+                <input
+                  type="text"
+                  inputmode="none"
+                  readonly
+                  id="checkout-discount"
+                  onclick="app.openNumpad(this, 'money')"
+                  class="w-full h-12 px-4 rounded-xl border-2 border-duo-gray font-extrabold text-duo-red text-lg"
+                />
+              </div>
+              <div
+                class="flex h-12 bg-gray-100 rounded-xl p-1 border-2 border-duo-gray"
+              >
+                <button
+                  onclick="app.setDiscountType('money')"
+                  id="btn-disc-money"
+                  class="px-3 rounded-lg font-bold text-xs transition-all bg-white shadow-sm text-duo-text"
+                >
+                  VNĐ
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Variant Selector Modal (For POS) -->
-    <div id="variant-selector-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="app.closeVariantSelector()"></div>
-        <div class="bg-white w-full md:w-[400px] rounded-t-3xl md:rounded-3xl shadow-2xl p-6 animate-slide-up relative z-10 pb-10 md:pb-6">
-            <h3 class="text-xl font-extrabold text-gray-700 mb-6 text-center">Chọn phân loại</h3>
-            <div id="variant-options" class="grid grid-cols-2 gap-4 mb-6">
-                <!-- Buttons generated via JS -->
-            </div>
-            <button onclick="app.closeVariantSelector()" class="w-full bg-gray-100 text-gray-500 font-bold py-4 rounded-2xl btn-3d border-gray-300">Hủy bỏ</button>
-        </div>
-    </div>
-
-    <!-- 4. Checkout Modal -->
-    <div id="checkout-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="app.closeCheckoutModal()"></div>
-        <div class="bg-white w-full md:w-[500px] h-[95vh] md:h-auto rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col animate-slide-up relative z-10">
-            <div class="p-5 border-b border-gray-100 text-center relative">
-                <h3 class="text-2xl font-extrabold text-gray-700">Thanh toán</h3>
-                 <button onclick="app.closeCheckoutModal()" class="absolute right-5 top-5 text-gray-400 bg-gray-100 p-1 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto p-5 space-y-6">
-                <!-- Customer Info -->
-                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200">
-                    <div class="mb-4">
-                        <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">Tên khách hàng</label>
-                        <div class="input-wrapper">
-                            <i data-lucide="user"></i>
-                            <input type="text" id="checkout-cust-name" placeholder="Khách lẻ">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">Số điện thoại</label>
-                        <div class="input-wrapper cursor-pointer" onclick="app.openNumpad('checkout-cust-phone')">
-                             <i data-lucide="phone"></i>
-                            <input type="text" id="checkout-cust-phone" readonly placeholder="Nhập SĐT" class="cursor-pointer">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Method -->
-                <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase mb-3 block">Hình thức thanh toán</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="app.setPaymentMethod('cash'); app.playSound('click')" id="pm-cash" class="payment-opt p-4 border-2 rounded-2xl font-bold text-gray-600 flex flex-col items-center gap-2 active-pm transition-all">
-                            <i data-lucide="banknote" class="w-8 h-8"></i> Tiền mặt
-                        </button>
-                        <button onclick="app.setPaymentMethod('transfer'); app.playSound('click')" id="pm-transfer" class="payment-opt p-4 border-2 border-gray-200 rounded-2xl font-bold text-gray-600 flex flex-col items-center gap-2 transition-all">
-                            <i data-lucide="credit-card" class="w-8 h-8"></i> Chuyển khoản
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Status (Paid vs Debt) -->
-                <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase mb-3 block">Trạng thái</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="app.setPaymentStatus('paid'); app.playSound('click')" id="ps-paid" class="status-opt p-4 border-2 rounded-2xl font-bold text-duo-green flex justify-center items-center gap-2 active-ps-paid transition-all">
-                            <i data-lucide="check-circle" class="w-6 h-6"></i> Đã trả
-                        </button>
-                        <button onclick="app.setPaymentStatus('debt'); app.playSound('click')" id="ps-debt" class="status-opt p-4 border-2 border-gray-200 rounded-2xl font-bold text-gray-400 flex justify-center items-center gap-2 transition-all">
-                            <i data-lucide="clock" class="w-6 h-6"></i> Ghi nợ
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <p class="text-gray-500 font-bold text-sm uppercase">Tổng phải thu</p>
-                    <p class="text-4xl font-extrabold text-duo-green mt-1 tracking-tight" id="checkout-final-total">0</p>
-                </div>
-            </div>
-
-            <div class="p-5 border-t border-gray-100 pb-safe bg-white rounded-b-3xl">
-                <button onclick="app.processCheckout()" class="w-full bg-duo-blue text-white font-extrabold py-4 rounded-2xl btn-3d border-duo-blue-dark shadow-lg text-xl tracking-wide">
-                    HOÀN TẤT
+                <button
+                  onclick="app.setDiscountType('percent')"
+                  id="btn-disc-percent"
+                  class="px-3 rounded-lg font-bold text-xs transition-all text-duo-grayShade"
+                >
+                  %
                 </button>
+              </div>
             </div>
+
+            <div
+              class="border-t-2 border-duo-gray pt-3 flex justify-between items-center text-xl"
+            >
+              <span class="font-extrabold text-duo-blue">KHÁCH CẦN TRẢ</span>
+              <span
+                id="checkout-final"
+                class="font-black text-duo-blue text-2xl"
+                >0</span
+              >
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <label
+              class="block text-xs font-extrabold text-duo-grayShade uppercase"
+              >Hình thức</label
+            >
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                onclick="app.setPaymentMethod('cash')"
+                id="pm-cash"
+                class="h-14 rounded-2xl border-2 border-duo-blue bg-duo-blue text-white font-extrabold btn-duo border-b-4 border-duo-blueShade flex items-center justify-center gap-2"
+              >
+                <i class="fa-solid fa-money-bill-wave"></i> Tiền mặt
+              </button>
+              <button
+                onclick="app.setPaymentMethod('transfer')"
+                id="pm-transfer"
+                class="h-14 rounded-2xl border-2 border-duo-gray bg-white text-duo-grayShade font-bold btn-duo border-b-4 border-duo-grayShade flex items-center justify-center gap-2"
+              >
+                <i class="fa-solid fa-qrcode"></i> CK
+              </button>
+            </div>
+            <div class="flex items-center gap-3 mt-4 justify-center">
+              <div
+                class="w-6 h-6 border-2 border-duo-gray rounded bg-white flex items-center justify-center cursor-pointer"
+                onclick="document.getElementById('check-debt').click()"
+              >
+                <input
+                  type="checkbox"
+                  id="check-debt"
+                  class="hidden"
+                  onchange="app.toggleDebtState()"
+                />
+                <i
+                  class="fa-solid fa-check text-duo-blue hidden"
+                  id="check-debt-icon"
+                ></i>
+              </div>
+              <label
+                for="check-debt"
+                class="font-extrabold text-duo-text select-none cursor-pointer"
+                >Khách ghi nợ</label
+              >
+            </div>
+          </div>
         </div>
-    </div>
-
-    <!-- 5. Order Detail Modal (Read Only / Pay Debt) -->
-    <div id="order-detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="app.closeOrderDetail()"></div>
-        <div class="bg-white w-full md:w-[450px] max-h-[80vh] rounded-3xl shadow-2xl flex flex-col animate-pop-in relative z-10 overflow-hidden">
-            <div class="bg-duo-blue p-5 text-white text-center relative">
-                <h3 class="text-lg font-extrabold">Chi tiết đơn hàng</h3>
-                <p id="od-id" class="text-sm opacity-80 font-mono mt-1">#ID</p>
-                 <button onclick="app.closeOrderDetail()" class="absolute right-4 top-4 text-white/80 bg-white/20 p-1 rounded-full hover:bg-white/30"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-5">
-                <div class="flex justify-between items-center mb-6 pb-6 border-b border-gray-100">
-                    <div>
-                        <p id="od-customer" class="font-extrabold text-gray-800 text-lg">Khách lẻ</p>
-                        <p id="od-date" class="text-sm text-gray-500 font-bold mt-1">dd/mm/yyyy</p>
-                    </div>
-                    <div id="od-status-badge" class="px-3 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-500 uppercase tracking-wider">
-                        Status
-                    </div>
-                </div>
-                <div id="od-items" class="space-y-3 text-sm text-gray-700">
-                    <!-- Items -->
-                </div>
-                <div class="mt-6 pt-6 border-t-2 border-dashed border-gray-200">
-                    <!-- Discount Row (Dynamic) -->
-                    <div id="od-discount-row" class="flex justify-between font-bold text-duo-red mb-2 hidden">
-                        <span class="text-gray-500 font-normal">Giảm giá</span>
-                        <span id="od-discount">-0</span>
-                    </div>
-                    <div class="flex justify-between font-extrabold text-xl items-center">
-                        <span class="text-gray-500 text-base">Tổng cộng</span>
-                        <span id="od-total" class="text-duo-blue">0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="p-5 bg-gray-50 flex gap-4">
-                <button id="btn-pay-debt" type="button" onclick="app.confirmAction('Xác nhận khách đã trả hết nợ?', () => app.payDebtCurrentOrder())" class="flex-1 bg-duo-green text-white font-bold py-3 rounded-2xl btn-3d border-duo-green-dark shadow-md hidden flex justify-center items-center gap-2">
-                    <i data-lucide="check-circle" class="w-5 h-5"></i> Xác nhận trả nợ
-                </button>
-                <button id="btn-delete-order" type="button" onclick="app.confirmAction('Bạn có chắc chắn xóa đơn này?', () => app.deleteCurrentOrder())" class="w-14 bg-red-50 text-duo-red font-bold py-3 rounded-2xl btn-3d border-red-100 flex justify-center items-center">
-                    <i data-lucide="trash-2" class="w-5 h-5"></i>
-                </button>
-            </div>
+        <div class="p-4 border-t-2 border-duo-gray w-full bg-white pb-safe">
+          <button
+            onclick="app.processCheckout()"
+            class="w-full h-14 bg-duo-green text-white rounded-2xl font-extrabold text-lg uppercase tracking-wider btn-duo border-duo-greenShade shadow-xl"
+          >
+            Hoàn tất
+          </button>
         </div>
+      </div>
     </div>
 
-    <!-- NOTIFICATION TOAST -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-4 rounded-2xl shadow-2xl transform -translate-y-32 transition-transform duration-300 z-[100] font-bold flex items-center gap-3">
-        <div class="bg-duo-green rounded-full p-1"><i data-lucide="check" class="w-4 h-4 text-white"></i></div>
-        <span id="toast-msg">Thành công!</span>
+    <!-- 5. ORDER DETAIL MODAL -->
+    <div
+      id="modal-order-detail"
+      class="fixed inset-0 z-40 hidden flex items-center justify-center backdrop p-4"
+    >
+      <div
+        class="bg-white w-full max-w-md rounded-3xl shadow-2xl animate-pop overflow-hidden flex flex-col max-h-[85dvh] border-2 border-duo-gray"
+      >
+        <div
+          class="p-4 border-b-2 border-duo-gray flex justify-between items-center bg-gray-50"
+        >
+          <h3 class="font-extrabold text-lg">Chi tiết đơn</h3>
+          <button
+            onclick="app.closeModal('modal-order-detail')"
+            class="w-10 h-10 rounded-xl bg-white border-2 border-duo-gray flex items-center justify-center btn-duo"
+          >
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div
+          class="p-6 overflow-y-auto space-y-4 text-sm no-scrollbar"
+          id="order-detail-content"
+        ></div>
+        <div
+          class="p-4 border-t-2 border-duo-gray flex gap-3 pb-safe"
+          id="order-actions"
+        ></div>
+      </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- 6. CONFIRM MODAL -->
+    <div
+      id="modal-confirm"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center backdrop p-6"
+    >
+      <div
+        class="bg-white w-full max-w-xs rounded-3xl shadow-xl animate-shake p-6 text-center border-2 border-duo-gray"
+      >
+        <div
+          class="w-20 h-20 bg-duo-red rounded-full flex items-center justify-center text-3xl text-white mx-auto mb-4 border-b-4 border-duo-redShade"
+        >
+          <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <h3
+          class="font-extrabold text-xl text-duo-text mb-2"
+          id="confirm-title"
+        >
+          Xác nhận
+        </h3>
+        <p class="text-duo-grayShade font-bold mb-6" id="confirm-msg">
+          Bạn có chắc chắn không?
+        </p>
+        <div class="flex gap-3">
+          <button
+            onclick="app.closeModal('modal-confirm')"
+            class="flex-1 h-12 rounded-2xl border-2 border-duo-gray font-extrabold text-duo-grayShade btn-duo border-duo-grayShade"
+          >
+            Không
+          </button>
+          <button
+            id="btn-confirm-yes"
+            class="flex-1 h-12 rounded-2xl bg-duo-red text-white font-extrabold btn-duo border-duo-redShade"
+          >
+            Có, Xóa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. CART MOBILE SHEET -->
+    <div id="cart-sheet-mobile" class="fixed inset-0 z-40 hidden md:hidden">
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        onclick="app.closeCartMobile()"
+      ></div>
+      <div
+        class="absolute bottom-0 left-0 w-full h-[85dvh] bg-white rounded-t-3xl shadow-2xl animate-slide-up flex flex-col border-t-2 border-duo-gray pb-safe"
+      >
+        <div
+          class="p-4 border-b-2 border-duo-gray flex justify-between items-center bg-gray-50 rounded-t-3xl"
+        >
+          <h3 class="font-extrabold text-lg uppercase text-duo-text">
+            Giỏ hàng
+          </h3>
+          <button
+            onclick="app.closeCartMobile()"
+            class="w-10 h-10 rounded-xl bg-white border-2 border-duo-gray flex items-center justify-center btn-duo"
+          >
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+        </div>
+        <div
+          id="cart-items-mobile"
+          class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar"
+        ></div>
+        <div class="p-4 border-t-2 border-duo-gray bg-white">
+          <div class="flex justify-between mb-4 text-xl text-duo-blue">
+            <span class="font-bold">Tổng tiền:</span>
+            <span id="cart-total-mobile" class="font-extrabold">0</span>
+          </div>
+          <button
+            onclick="app.openCheckoutModal()"
+            class="w-full h-14 bg-duo-blue text-white rounded-2xl font-extrabold uppercase tracking-wider btn-duo border-duo-blueShade shadow-xl"
+          >
+            Thanh toán
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS LOGIC -->
     <script>
-        // === AUDIO CONTEXT SETUP ===
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const app = {
-            data: {
-                activeTab: 'pos',
-                products: [],
-                cart: [],
-                orders: [],
-                editingProduct: null,
-                numpadTarget: null, 
-                cartMobileOpen: false,
-                discountType: 'amount', 
-                checkoutMethod: 'cash',
-                checkoutStatus: 'paid',
-                statsFilterDebt: false,
-                currentOrderDetailId: null
+      const app = {
+        data: {
+          products: [],
+          orders: [],
+          cart: [],
+          config: {
+            activeTab: "pos",
+            numpadTarget: null,
+            numpadMode: "number",
+            discountType: "money",
+            paymentMethod: "cash",
+            editingProdId: null,
+            isDebtFilter: false,
+            deletingType: null, // 'order' or 'product'
+            deletingId: null,
+          },
+        },
+
+        init() {
+          this.loadData();
+          this.renderNav();
+          this.renderPosProducts();
+          this.renderInventory();
+          this.updateStats();
+          this.updateCartUI();
+          document.body.addEventListener(
+            "click",
+            () => {
+              if (!this.audioContext) this.initAudio();
             },
+            { once: true }
+          );
+        },
 
-            init() {
-                this.data.products = JSON.parse(localStorage.getItem('sd_products')) || [];
-                this.data.orders = JSON.parse(localStorage.getItem('sd_orders')) || [];
-                
-                this.switchTab('pos');
-                this.renderStatsMonthOptions();
-                lucide.createIcons();
-            },
+        loadData() {
+          const p = localStorage.getItem("st_products");
+          const o = localStorage.getItem("st_orders");
+          if (p) this.data.products = JSON.parse(p);
+          else
+            this.data.products = [
+              {
+                id: 1,
+                name: "Áo Thun",
+                price: 150000,
+                cost: 80000,
+                stock: 20,
+                isConsignment: false,
+                hasVariants: true,
+                variants: [
+                  { name: "M", stock: 10 },
+                  { name: "L", stock: 10 },
+                ],
+              },
+              {
+                id: 2,
+                name: "Quần Jeans",
+                price: 350000,
+                cost: 200000,
+                stock: 15,
+                isConsignment: false,
+                hasVariants: false,
+                variants: [],
+              },
+            ];
+          if (o) this.data.orders = JSON.parse(o);
+        },
+        saveData() {
+          localStorage.setItem(
+            "st_products",
+            JSON.stringify(this.data.products)
+          );
+          localStorage.setItem("st_orders", JSON.stringify(this.data.orders));
+        },
 
-            saveData() {
-                localStorage.setItem('sd_products', JSON.stringify(this.data.products));
-                localStorage.setItem('sd_orders', JSON.stringify(this.data.orders));
-            },
+        initAudio() {
+          this.audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+        },
+        playSound(type) {
+          if (!this.audioContext) return;
+          const ctx = this.audioContext;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          const now = ctx.currentTime;
+          if (type === "click") {
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+          } else if (type === "pop") {
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.linearRampToValueAtTime(600, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+          } else if (type === "success") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.setValueAtTime(800, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+          }
+        },
 
-            // === SOUND SYSTEM ===
-            playSound(type) {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
+        // --- TOAST NOTIFICATION SYSTEM ---
+        showToast(message, type = "info") {
+          const container = document.getElementById("toast-container");
+          const toast = document.createElement("div");
+          const bgClass = type === "error" ? "bg-duo-red" : "bg-duo-green";
+          const icon =
+            type === "error"
+              ? '<i class="fa-solid fa-circle-exclamation"></i>'
+              : '<i class="fa-solid fa-check-circle"></i>';
 
-                if (type === 'click') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, now);
-                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                } 
-                else if (type === 'pop') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(400, now);
-                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                }
-                else if (type === 'success') {
-                    const frequencies = [523.25, 659.25, 783.99, 1046.50]; 
-                    frequencies.forEach((freq, i) => {
-                        const o = audioCtx.createOscillator();
-                        const g = audioCtx.createGain();
-                        o.connect(g);
-                        g.connect(audioCtx.destination);
-                        o.type = 'sine';
-                        o.frequency.value = freq;
-                        g.gain.setValueAtTime(0.05, now + i * 0.08);
-                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3);
-                        o.start(now + i * 0.08);
-                        o.stop(now + i * 0.08 + 0.3);
-                    });
-                    return; 
-                }
-                else if (type === 'delete') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                }
-            },
+          toast.className = `${bgClass} text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-extrabold animate-slide-down pointer-events-auto border-b-4 border-black/20`;
+          toast.innerHTML = `${icon} <span>${message}</span>`;
 
-            // === CUSTOM CONFIRM MODAL ===
-            confirmAction(msg, callback) {
-                document.getElementById('confirm-msg').innerText = msg;
-                const btnYes = document.getElementById('confirm-btn-yes');
-                // Remove old listeners to prevent stacking
-                const newBtn = btnYes.cloneNode(true);
-                btnYes.parentNode.replaceChild(newBtn, btnYes);
-                
-                newBtn.onclick = () => {
-                    callback();
-                    app.closeConfirm();
-                };
-                document.getElementById('confirm-modal').classList.remove('hidden');
-                app.playSound('pop');
-            },
+          container.appendChild(toast);
 
-            closeConfirm() {
-                document.getElementById('confirm-modal').classList.add('hidden');
-            },
+          // Auto remove
+          setTimeout(() => {
+            toast.classList.remove("animate-slide-down");
+            toast.classList.add("animate-fade-out");
+            toast.addEventListener("animationend", () => toast.remove());
+          }, 2500);
+        },
 
-            // === NAVIGATION ===
-            switchTab(tabName) {
-                this.data.activeTab = tabName;
-                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+        renderNav() {
+          this.switchTab(this.data.config.activeTab);
+        },
+        switchTab(tab) {
+          this.playSound("click");
+          this.data.config.activeTab = tab;
+          document
+            .querySelectorAll(".view-section")
+            .forEach((el) => el.classList.add("hidden"));
+          document.getElementById("view-" + tab).classList.remove("hidden");
 
-                document.querySelectorAll('.nav-item').forEach(el => {
-                    const icon = el.querySelector('.nav-icon');
-                    const text = el.querySelector('span');
-                    icon.classList.remove('text-duo-green', 'text-duo-blue', 'text-duo-yellow', 'text-duo-red');
-                    text.classList.remove('text-duo-blue', 'text-duo-green', 'text-duo-yellow');
-                    text.classList.add('text-gray-400');
-                });
+          // Styles PC
+          const colors = {
+            pos: "text-duo-blue border-duo-blue bg-blue-50",
+            products: "text-duo-green border-duo-green bg-green-50",
+            stats: "text-duo-yellow border-duo-yellow bg-yellow-50",
+          };
+          document
+            .querySelectorAll("#nav-pc-pos, #nav-pc-products, #nav-pc-stats")
+            .forEach(
+              (el) =>
+                (el.className =
+                  "w-full flex items-center gap-4 p-4 rounded-2xl font-bold uppercase tracking-wider text-duo-grayShade hover:bg-gray-50 border-2 border-transparent hover:border-duo-gray transition-all")
+            );
+          document.getElementById(
+            "nav-pc-" + tab
+          ).className = `w-full flex items-center gap-4 p-4 rounded-2xl font-bold uppercase tracking-wider border-2 transition-all ${colors[tab]}`;
 
-                const activeBtn = document.getElementById(`nav-${tabName}`);
-                const activeColor = tabName === 'pos' ? 'text-duo-blue' : tabName === 'products' ? 'text-duo-green' : 'text-duo-yellow';
-                activeBtn.querySelector('.nav-icon').classList.add(activeColor);
-                activeBtn.querySelector('span').classList.remove('text-gray-400');
-                activeBtn.querySelector('span').classList.add(activeColor);
+          // Styles Mobile
+          const mobileColors = {
+            pos: "text-duo-blue",
+            products: "text-duo-green",
+            stats: "text-duo-yellow",
+          };
+          document
+            .querySelectorAll(".nav-item-mobile")
+            .forEach(
+              (el) =>
+                (el.className =
+                  "nav-item-mobile relative flex-1 h-full flex flex-col items-center justify-center text-duo-grayShade active:scale-95 transition-transform pb-2")
+            );
+          const mobIdx = tab === "pos" ? 0 : tab === "products" ? 1 : 2;
+          document
+            .querySelectorAll(".nav-item-mobile")
+            [mobIdx].classList.add(mobileColors[tab]);
+          document
+            .querySelectorAll(".nav-item-mobile")
+            [mobIdx].classList.remove("text-duo-grayShade");
 
-                if(tabName === 'products') this.renderInventory();
-                if(tabName === 'pos') this.renderPosProducts();
-                if(tabName === 'stats') this.renderStats();
-            },
+          document
+            .getElementById("fab-cart")
+            .classList.toggle("hidden", tab !== "pos");
+          document.getElementById("header-title").innerText =
+            tab === "pos"
+              ? "Bán hàng"
+              : tab === "products"
+              ? "Kho hàng"
+              : "Báo cáo";
+        },
+        toggleSearch() {
+          const tab = this.data.config.activeTab;
+          if (tab === "pos") document.querySelector("#view-pos input").focus();
+          if (tab === "stats")
+            document.querySelector("#view-stats input").focus();
+        },
 
-            // === NUMPAD LOGIC ===
-            openNumpad(targetId) {
-                this.playSound('pop');
-                this.data.numpadTarget = targetId;
-                const input = document.getElementById(targetId);
-                let currentVal = input.value.replace(/\D/g, ''); 
-                
-                if (targetId.includes('phone')) {
-                     currentVal = input.value; 
-                     document.getElementById('numpad-display').innerText = currentVal;
-                } else {
-                     document.getElementById('numpad-display').innerText = currentVal ? Number(currentVal).toLocaleString('vi-VN') : '0';
-                }
-                
-                document.getElementById('numpad-modal').classList.remove('hidden');
-                
-                let label = "Nhập giá trị";
-                if(targetId.includes('price')) label = "Nhập giá bán (VNĐ)";
-                if(targetId.includes('cost')) label = "Nhập giá vốn (VNĐ)";
-                if(targetId.includes('phone')) label = "Nhập số điện thoại (10 số)";
-                if(targetId.includes('discount')) label = "Nhập giảm giá";
-                if(targetId.includes('stock')) label = "Nhập tồn kho (Cái)";
-                if(targetId.includes('var-stock')) label = "Nhập số lượng phân loại";
-                document.getElementById('numpad-label').innerText = label;
-            },
+        formatMoney(num) {
+          return parseInt(num || 0).toLocaleString("vi-VN");
+        },
+        parseMoney(str) {
+          return parseInt(str.replace(/\./g, "")) || 0;
+        },
 
-            closeNumpad() {
-                document.getElementById('numpad-modal').classList.add('hidden');
-                this.data.numpadTarget = null;
-            },
+        openNumpad(inputEl, mode) {
+          this.playSound("click");
+          this.data.config.numpadTarget = inputEl;
+          this.data.config.numpadMode = mode;
+          document.getElementById("numpad-sheet").classList.remove("hidden");
 
-            numpadPress(key) {
-                this.playSound('click');
-                const display = document.getElementById('numpad-display');
-                
-                if (this.data.numpadTarget && this.data.numpadTarget.includes('phone')) {
-                    let rawVal = display.innerText;
-                    if (key === 'C') rawVal = '';
-                    else if (key === 'BACK') rawVal = rawVal.slice(0, -1);
-                    else if (rawVal.length < 10) rawVal += key;
-                    display.innerText = rawVal;
-                    return;
-                }
-
-                let rawVal = display.innerText.replace(/\./g, '');
-                if (key === 'C') rawVal = '0';
-                else if (key === 'BACK') rawVal = rawVal.slice(0, -1) || '0';
-                else rawVal = rawVal === '0' ? key : rawVal + key;
-                display.innerText = Number(rawVal).toLocaleString('vi-VN');
-            },
-
-            numpadFinish() {
-                this.playSound('pop');
-                if (this.data.numpadTarget) {
-                    const display = document.getElementById('numpad-display');
-                    const val = display.innerText;
-                    const input = document.getElementById(this.data.numpadTarget);
-                    
-                    if (this.data.numpadTarget === 'cart-discount' && this.data.discountType === 'percent') {
-                         let num = parseInt(val.replace(/\./g, ''));
-                         if (num > 100) num = 100;
-                         input.value = num;
-                    } else {
-                        input.value = val;
-                    }
-                    if (this.data.numpadTarget === 'cart-discount') this.renderCart();
-                }
-                this.closeNumpad();
-            },
-
-            // === INVENTORY ===
-            renderInventory() {
-                const grid = document.getElementById('inventory-grid');
-                grid.innerHTML = '';
-                this.data.products.forEach(p => {
-                    const totalStock = p.hasVariants ? p.variants.reduce((sum, v) => sum + v.stock, 0) : p.stock;
-                    let stockClass = totalStock === 0 ? 'bg-duo-red' : totalStock < 5 ? 'bg-duo-yellow' : 'bg-duo-green';
-                    
-                    let variantsHtml = '';
-                    if (p.hasVariants) {
-                        variantsHtml = `<div class="mt-3 bg-gray-50 rounded-xl p-2 space-y-1">
-                            ${p.variants.map(v => `<div class="flex justify-between text-xs font-bold text-gray-600 border-b border-gray-100 last:border-0 pb-1 last:pb-0"><span>${v.name}</span><span class="${v.stock > 0 ? 'text-duo-green-dark' : 'text-duo-red'}">${v.stock}</span></div>`).join('')}
-                        </div>`;
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = 'bg-white rounded-2xl p-4 shadow-sm border-2 border-gray-100 flex flex-col justify-between';
-                    card.innerHTML = `
-                        <div>
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-gray-700 text-lg leading-tight line-clamp-2">${p.name}</h3>
-                                ${p.isCommission ? '<span class="text-[10px] font-bold bg-purple-100 text-purple-600 px-2 py-1 rounded-full uppercase tracking-wide">Ký gửi</span>' : ''}
-                            </div>
-                            <p class="text-duo-blue font-extrabold text-xl mb-2">${parseInt(p.price).toLocaleString('vi-VN')} đ</p>
-                            ${!p.hasVariants ? `<div class="flex items-center gap-2 text-sm text-gray-500 font-bold bg-gray-50 p-2 rounded-lg"><span class="w-2 h-2 rounded-full ${stockClass}"></span>Kho: ${totalStock}</div>` : ''}
-                            ${variantsHtml}
-                        </div>
-                        <div class="mt-4 flex gap-2">
-                            <button onclick="app.openProductModal('${p.id}'); app.playSound('click')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 rounded-xl text-sm transition-colors border-b-2 border-gray-200 active:border-b-0 active:translate-y-0.5">Sửa</button>
-                            <button onclick="app.confirmAction('Bạn có chắc muốn xóa sản phẩm này?', () => app.deleteProduct('${p.id}'));" class="px-3 bg-red-50 hover:bg-red-100 text-duo-red rounded-xl border-b-2 border-red-100 active:border-b-0 active:translate-y-0.5"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
-                        </div>`;
-                    grid.appendChild(card);
-                });
-                lucide.createIcons();
-            },
-
-            openProductModal(productId = null) {
-                document.getElementById('product-modal').classList.remove('hidden');
-                if (productId) {
-                    const p = this.data.products.find(x => x.id === productId);
-                    this.data.editingProduct = p;
-                    document.getElementById('prod-modal-title').innerText = "Sửa sản phẩm";
-                    document.getElementById('prod-id').value = p.id;
-                    document.getElementById('prod-name').value = p.name;
-                    document.getElementById('prod-price').value = parseInt(p.price).toLocaleString('vi-VN');
-                    document.getElementById('prod-cost').value = parseInt(p.cost).toLocaleString('vi-VN');
-                    document.getElementById('prod-is-commission').checked = p.isCommission || false;
-                    document.getElementById('prod-has-variants').checked = p.hasVariants || false;
-                    if (!p.hasVariants) document.getElementById('prod-stock').value = p.stock.toLocaleString('vi-VN');
-                    else {
-                        const vList = document.getElementById('variants-list');
-                        vList.innerHTML = '';
-                        p.variants.forEach(v => this.addVariantRow(v.name, v.stock));
-                    }
-                } else {
-                    this.data.editingProduct = null;
-                    document.getElementById('prod-modal-title').innerText = "Thêm sản phẩm";
-                    document.getElementById('prod-id').value = '';
-                    ['prod-name','prod-price','prod-cost','prod-stock'].forEach(id => document.getElementById(id).value = '');
-                    document.getElementById('prod-is-commission').checked = false;
-                    document.getElementById('prod-has-variants').checked = false;
-                    document.getElementById('variants-list').innerHTML = '';
-                    this.addVariantRow(); // Add 1 empty row
-                }
-                this.toggleCommissionMode();
-                this.toggleVariantMode();
-            },
-
-            closeProductModal() {
-                document.getElementById('product-modal').classList.add('hidden');
-            },
-
-            toggleCommissionMode() {
-                const isComm = document.getElementById('prod-is-commission').checked;
-                document.getElementById('lbl-cost').innerText = isComm ? "Tiền hoa hồng (mỗi cái)" : "Giá nhập (Giá vốn)";
-            },
-
-            toggleVariantMode() {
-                const hasVar = document.getElementById('prod-has-variants').checked;
-                document.getElementById('simple-stock-area').classList.toggle('hidden', hasVar);
-                document.getElementById('variants-area').classList.toggle('hidden', !hasVar);
-            },
-
-            addVariantRow(name = '', stock = '') {
-                const list = document.getElementById('variants-list');
-                const div = document.createElement('div');
-                const stockInputId = 'var-stock-' + Date.now() + Math.random().toString(36).substr(2, 5);
-                div.className = 'flex gap-2 items-center variant-row animate-pop-in';
-                div.innerHTML = `
-                     <div class="flex-1 input-wrapper small"><input type="text" placeholder="Size/Màu" value="${name}" class="v-name"></div>
-                    <div class="w-24 input-wrapper small cursor-pointer" onclick="app.openNumpad('${stockInputId}')"><input type="text" id="${stockInputId}" placeholder="SL" value="${stock}" readonly class="v-stock text-center cursor-pointer"></div>
-                    <button onclick="this.parentElement.remove(); app.playSound('delete')" class="text-gray-300 hover:text-duo-red p-2 rounded-full hover:bg-red-50"><i data-lucide="x" class="w-5 h-5"></i></button>`;
-                list.appendChild(div);
-                lucide.createIcons();
-            },
-
-            saveProduct() {
-                this.playSound('success');
-                const id = document.getElementById('prod-id').value || 'P' + Date.now();
-                const name = document.getElementById('prod-name').value;
-                const price = parseInt(document.getElementById('prod-price').value.replace(/\./g, '')) || 0;
-                const cost = parseInt(document.getElementById('prod-cost').value.replace(/\./g, '')) || 0;
-                const isCommission = document.getElementById('prod-is-commission').checked;
-                const hasVariants = document.getElementById('prod-has-variants').checked;
-                let stock = 0, variants = [];
-
-                if (hasVariants) {
-                    document.querySelectorAll('.variant-row').forEach(row => {
-                        const vName = row.querySelector('.v-name').value;
-                        const vStock = parseInt(row.querySelector('.v-stock').value.replace(/\./g, '')) || 0;
-                        if (vName) variants.push({ name: vName, stock: vStock });
-                    });
-                } else stock = parseInt(document.getElementById('prod-stock').value.replace(/\./g, '')) || 0;
-
-                if (!name) return this.showToast('Nhập tên sản phẩm!');
-                const product = { id, name, price, cost, isCommission, hasVariants, stock, variants };
-
-                if (this.data.editingProduct) this.data.products[this.data.products.findIndex(p => p.id === id)] = product;
-                else this.data.products.push(product);
-
-                this.saveData();
-                this.closeProductModal();
-                this.renderInventory();
-                this.showToast('Đã lưu sản phẩm!');
-            },
-            
-            deleteProduct(id) {
-                this.data.products = this.data.products.filter(p => p.id !== id);
-                this.saveData();
-                this.renderInventory();
-                this.playSound('delete');
-            },
-
-            // === POS ===
-            renderPosProducts(search = '') {
-                const grid = document.getElementById('pos-product-grid');
-                grid.innerHTML = '';
-                this.data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).forEach(p => {
-                    const totalStock = p.hasVariants ? p.variants.reduce((a,b)=>a+b.stock,0) : p.stock;
-                    if (totalStock <= 0) return; 
-                    const el = document.createElement('div');
-                    el.className = 'bg-white rounded-2xl p-3 border-2 border-gray-100 shadow-sm cursor-pointer hover:border-duo-green transition-all btn-3d active:translate-y-1 flex flex-col justify-between h-full';
-                    el.onclick = () => { this.addToCartClick(p); app.playSound('pop'); };
-                    el.innerHTML = `<div><p class="font-bold text-gray-700 text-sm mb-1 leading-tight line-clamp-2">${p.name}</p><p class="text-duo-blue font-extrabold text-lg">${parseInt(p.price).toLocaleString('vi-VN')}</p></div><p class="text-[10px] text-gray-400 font-bold mt-2 bg-gray-50 rounded px-1 py-0.5 w-fit">Kho: ${totalStock}</p>`;
-                    grid.appendChild(el);
-                });
-            },
-
-            addToCartClick(product) {
-                if (product.hasVariants) this.openVariantSelector(product);
-                else this.addToCart(product, null);
-            },
-
-            openVariantSelector(product) {
-                const modal = document.getElementById('variant-selector-modal');
-                const container = document.getElementById('variant-options');
-                container.innerHTML = '';
-                product.variants.forEach(v => {
-                    if (v.stock > 0) {
-                        const btn = document.createElement('button');
-                        btn.className = 'bg-white border-b-4 border-gray-200 text-gray-700 font-bold py-3 rounded-2xl active:border-b-0 active:translate-y-1 transition-all flex justify-between px-4 items-center group';
-                        btn.innerHTML = `<span>${v.name}</span><span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500 font-extrabold group-hover:bg-duo-blue group-hover:text-white transition-colors">${v.stock}</span>`;
-                        btn.onclick = () => { this.addToCart(product, v.name); this.closeVariantSelector(); app.playSound('pop'); };
-                        container.appendChild(btn);
-                    }
-                });
-                modal.classList.remove('hidden');
-            },
-
-            closeVariantSelector() { document.getElementById('variant-selector-modal').classList.add('hidden'); },
-
-            addToCart(product, variantName) {
-                const cartKey = product.id + (variantName ? `_${variantName}` : '');
-                const existing = this.data.cart.find(item => item.cartKey === cartKey);
-                let available = variantName ? product.variants.find(v => v.name === variantName).stock : product.stock;
-
-                if (existing) {
-                    if (existing.qty < available) existing.qty++;
-                    else { this.showToast('Đã hết hàng trong kho!'); return; }
-                } else {
-                    this.data.cart.push({ cartKey, productId: product.id, name: product.name, price: product.price, cost: product.cost, isCommission: product.isCommission, variantName: variantName, qty: 1, maxStock: available });
-                }
-                this.renderCart();
-                this.showToast('+1 vào giỏ');
-                // Mobile badge effect
-                const badge = document.getElementById('mobile-cart-badge');
-                badge.classList.add('scale-150');
-                setTimeout(() => badge.classList.remove('scale-150'), 200);
-            },
-
-            renderCart() {
-                const container = document.getElementById('cart-items');
-                container.innerHTML = '';
-                let subTotal = 0, totalQty = 0;
-
-                this.data.cart.forEach((item, index) => {
-                    subTotal += item.price * item.qty;
-                    totalQty += item.qty;
-                    const div = document.createElement('div');
-                    div.className = 'bg-white border-b border-gray-100 p-3 flex justify-between items-center last:border-0';
-                    div.innerHTML = `
-                        <div class="flex-1">
-                            <p class="font-bold text-gray-700 text-sm leading-tight">${item.name} ${item.variantName ? `<span class="text-duo-blue text-xs bg-blue-50 px-1 rounded ml-1 font-extrabold">${item.variantName}</span>` : ''}</p>
-                            <p class="text-gray-400 text-xs font-bold mt-1">${item.price.toLocaleString('vi-VN')} x ${item.qty}</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                             <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200">
-                                <button onclick="app.changeCartQty(${index}, -1); app.playSound('click')" class="w-8 h-8 flex items-center justify-center font-bold text-gray-400 hover:text-duo-red active:bg-gray-200 rounded-l-lg">-</button>
-                                <span class="text-sm font-extrabold w-6 text-center text-gray-700">${item.qty}</span>
-                                <button onclick="app.changeCartQty(${index}, 1); app.playSound('click')" class="w-8 h-8 flex items-center justify-center font-bold text-gray-400 hover:text-duo-green active:bg-gray-200 rounded-r-lg">+</button>
-                             </div>
-                        </div>`;
-                    container.appendChild(div);
-                });
-
-                document.getElementById('cart-count').innerText = totalQty;
-                document.getElementById('mobile-cart-badge').innerText = totalQty;
-                document.getElementById('mobile-cart-total').innerText = subTotal.toLocaleString('vi-VN');
-                document.getElementById('cart-subtotal').innerText = subTotal.toLocaleString('vi-VN');
-
-                let discountVal = parseInt(document.getElementById('cart-discount').value.replace(/\./g, '')) || 0;
-                let discountAmount = this.data.discountType === 'percent' ? (subTotal * (discountVal>100?100:discountVal)) / 100 : discountVal;
-                document.getElementById('cart-total').innerText = Math.max(0, subTotal - discountAmount).toLocaleString('vi-VN');
-                
-                if(totalQty === 0) container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-300"><i data-lucide="shopping-cart" class="w-16 h-16 mb-2 opacity-50"></i><p class="font-bold">Chưa có sản phẩm</p></div>`;
-            },
-
-            changeCartQty(index, delta) {
-                const item = this.data.cart[index];
-                const newQty = item.qty + delta;
-                if (newQty <= 0) this.data.cart.splice(index, 1);
-                else if (newQty > item.maxStock) { this.showToast('Đạt giới hạn tồn kho!'); return; }
-                else item.qty = newQty;
-                this.renderCart();
-            },
-
-            clearCart() {
-                this.data.cart = []; 
-                this.renderCart(); 
-                app.playSound('delete');
-            },
-
-            toggleCartMobile() {
-                this.data.cartMobileOpen = !this.data.cartMobileOpen;
-                const panel = document.getElementById('cart-panel');
-                panel.classList.toggle('translate-y-[110%]', !this.data.cartMobileOpen);
-                panel.classList.toggle('translate-y-0', this.data.cartMobileOpen);
-            },
-
-            toggleDiscountType() {
-                this.data.discountType = this.data.discountType === 'amount' ? 'percent' : 'amount';
-                document.getElementById('discount-type-btn').innerText = this.data.discountType === 'amount' ? 'VNĐ' : '%';
-                document.getElementById('cart-discount').value = 0;
-                this.renderCart();
-            },
-
-            openCheckoutModal() {
-                if (this.data.cart.length === 0) return this.showToast('Giỏ hàng trống!');
-                this.playSound('pop');
-                document.getElementById('checkout-modal').classList.remove('hidden');
-                document.getElementById('checkout-final-total').innerText = document.getElementById('cart-total').innerText;
-                document.getElementById('checkout-cust-name').value = '';
-                document.getElementById('checkout-cust-phone').value = '';
-                this.setPaymentMethod('cash');
-                this.setPaymentStatus('paid');
-                if(this.data.cartMobileOpen) this.toggleCartMobile();
-            },
-
-            closeCheckoutModal() { document.getElementById('checkout-modal').classList.add('hidden'); },
-
-            setPaymentMethod(method) {
-                this.data.checkoutMethod = method;
-                document.querySelectorAll('.payment-opt').forEach(el => {
-                    el.classList.remove('border-duo-blue', 'text-duo-blue', 'bg-blue-50');
-                    el.classList.add('border-gray-200', 'text-gray-600');
-                });
-                const active = document.getElementById(`pm-${method}`);
-                active.classList.remove('border-gray-200', 'text-gray-600');
-                active.classList.add('border-duo-blue', 'text-duo-blue', 'bg-blue-50');
-            },
-
-            setPaymentStatus(status) {
-                this.data.checkoutStatus = status;
-                const paidBtn = document.getElementById('ps-paid');
-                const debtBtn = document.getElementById('ps-debt');
-                paidBtn.className = `status-opt p-4 border-2 rounded-2xl font-bold flex justify-center items-center gap-2 transition-all ${status === 'paid' ? 'border-duo-green text-duo-green bg-green-50' : 'border-gray-200 text-gray-400'}`;
-                debtBtn.className = `status-opt p-4 border-2 rounded-2xl font-bold flex justify-center items-center gap-2 transition-all ${status === 'debt' ? 'border-duo-red text-duo-red bg-red-50' : 'border-gray-200 text-gray-400'}`;
-            },
-
-            processCheckout() {
-                this.playSound('success');
-                const subTotalStr = document.getElementById('cart-subtotal').innerText.replace(/\./g, '');
-                const totalStr = document.getElementById('checkout-final-total').innerText.replace(/\./g, '');
-                const order = {
-                    id: 'DH' + Date.now().toString().slice(-6),
-                    date: new Date().toISOString(),
-                    items: [...this.data.cart],
-                    customer: { name: document.getElementById('checkout-cust-name').value || 'Khách lẻ', phone: document.getElementById('checkout-cust-phone').value },
-                    paymentMethod: this.data.checkoutMethod,
-                    status: this.data.checkoutStatus,
-                    subTotal: parseInt(subTotalStr),
-                    discount: parseInt(subTotalStr) - parseInt(totalStr),
-                    total: parseInt(totalStr)
-                };
-
-                this.data.cart.forEach(item => {
-                    const prod = this.data.products.find(p => p.id === item.productId);
-                    if (prod) {
-                        if (item.variantName) { const v = prod.variants.find(v => v.name === item.variantName); if(v) v.stock -= item.qty; } 
-                        else prod.stock -= item.qty;
-                    }
-                });
-
-                this.data.orders.push(order);
-                this.data.cart = [];
-                this.renderCart();
-                this.saveData();
-                this.closeCheckoutModal();
-                this.showToast('Thanh toán thành công!');
-                this.renderPosProducts();
-            },
-
-            renderStatsMonthOptions() {
-                const select = document.getElementById('stats-month');
-                const today = new Date();
-                select.innerHTML = '';
-                for(let i=0; i<6; i++) {
-                    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                    const opt = document.createElement('option');
-                    opt.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                    opt.innerText = `Tháng ${d.getMonth()+1}/${d.getFullYear()}`;
-                    select.appendChild(opt);
-                }
-            },
-
-            toggleDebtFilter() {
-                this.data.statsFilterDebt = !this.data.statsFilterDebt;
-                const btn = document.getElementById('btn-debt-filter');
-                btn.classList.toggle('bg-duo-red', this.data.statsFilterDebt);
-                btn.classList.toggle('text-white', this.data.statsFilterDebt);
-                btn.classList.toggle('border-duo-red-dark', this.data.statsFilterDebt);
-                btn.classList.toggle('bg-white', !this.data.statsFilterDebt);
-                btn.classList.toggle('text-gray-500', !this.data.statsFilterDebt);
-                this.renderStats();
-            },
-
-            renderStats() {
-                const monthStr = document.getElementById('stats-month').value;
-                const searchTerm = document.getElementById('stats-search').value.toLowerCase();
-                
-                let filtered = this.data.orders.filter(o => o.date.startsWith(monthStr));
-                
-                if (searchTerm) {
-                    filtered = this.data.orders.filter(o => {
-                        const d = new Date(o.date);
-                        const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-                        return (
-                            o.id.toLowerCase().includes(searchTerm) ||
-                            o.customer.name.toLowerCase().includes(searchTerm) ||
-                            (o.customer.phone && o.customer.phone.includes(searchTerm)) ||
-                            dateStr.includes(searchTerm)
-                        );
-                    });
-                } else if (this.data.statsFilterDebt) {
-                    filtered = filtered.filter(o => o.status === 'debt');
-                }
-
-                let revenue = 0, profit = 0, commission = 0, debtTotal = 0;
-                
-                // === LOGIC FIXED: Only count revenue/profit if PAID ===
-                filtered.forEach(o => {
-                    if (o.status === 'debt') {
-                        debtTotal += o.total; // Only add to debt total
-                    } else if (o.status === 'paid') {
-                        revenue += o.total; // Add to revenue only if paid
-                        
-                        // Calculate profit only for paid orders
-                        o.items.forEach(item => {
-                            if (item.isCommission) {
-                                commission += (item.cost * item.qty);
-                            } else {
-                                profit += (item.price - item.cost) * item.qty;
-                            }
-                        });
-                        // Subtract discount from profit only if mixed/normal order
-                        if (!o.items.some(i => i.isCommission)) {
-                            profit -= o.discount;
-                        }
-                    }
-                });
-
-                document.getElementById('stat-revenue').innerText = revenue.toLocaleString('vi-VN');
-                document.getElementById('stat-commission').innerText = commission.toLocaleString('vi-VN');
-                document.getElementById('stat-profit').innerText = profit.toLocaleString('vi-VN');
-                
-                const netLabel = document.getElementById('stat-last-label');
-                const netVal = document.getElementById('stat-net');
-                if (this.data.statsFilterDebt) {
-                    netLabel.innerText = "Tổng nợ chưa thu";
-                    netVal.innerText = debtTotal.toLocaleString('vi-VN');
-                    netVal.className = "text-xl md:text-2xl font-extrabold text-duo-red truncate";
-                } else {
-                    netLabel.innerText = "Thực thu (Lãi+HH)";
-                    netVal.innerText = (profit + commission).toLocaleString('vi-VN');
-                    netVal.className = "text-xl md:text-2xl font-extrabold text-gray-700 truncate";
-                }
-
-                const list = document.getElementById('order-history-list');
-                list.innerHTML = '';
-                filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
-                filtered.forEach(o => {
-                    const d = new Date(o.date);
-                    const el = document.createElement('div');
-                    el.className = 'bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer hover:border-duo-blue active:bg-gray-50 transition-colors';
-                    el.onclick = () => { this.showOrderDetail(o.id); app.playSound('click'); };
-                    let statusBadge = o.status === 'debt' ? '<span class="bg-red-100 text-red-600 text-[10px] font-extrabold px-2 py-1 rounded uppercase tracking-wide">NỢ</span>' : '<span class="bg-green-100 text-green-600 text-[10px] font-extrabold px-2 py-1 rounded uppercase tracking-wide">TM</span>';
-                    
-                    const discountHtml = o.discount > 0 ? `<div class="text-[10px] font-bold text-duo-red mb-1">Giảm: -${o.discount.toLocaleString('vi-VN')}</div>` : '';
-
-                    el.innerHTML = `<div><div class="flex items-center gap-2 mb-1"><span class="font-extrabold text-gray-800 text-base">#${o.id.slice(-4)}</span><span class="text-xs text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded-full">${o.customer.name}</span></div><div class="text-xs text-gray-400 font-semibold">${d.getDate()}/${d.getMonth()+1} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}</div></div><div class="text-right">${discountHtml}<div class="font-extrabold text-gray-800 text-lg">${o.total.toLocaleString('vi-VN')}</div><div class="mt-1">${statusBadge}</div></div>`;
-                    list.appendChild(el);
-                });
-            },
-
-            showOrderDetail(orderId) {
-                const o = this.data.orders.find(x => x.id === orderId);
-                if(!o) return;
-                this.data.currentOrderDetailId = orderId;
-                document.getElementById('order-detail-modal').classList.remove('hidden');
-                document.getElementById('od-id').innerText = o.id;
-                document.getElementById('od-customer').innerText = `${o.customer.name} - ${o.customer.phone}`;
-                document.getElementById('od-date').innerText = new Date(o.date).toLocaleString('vi-VN');
-                document.getElementById('od-total').innerText = o.total.toLocaleString('vi-VN') + ' đ';
-
-                const discRow = document.getElementById('od-discount-row');
-                if (o.discount > 0) {
-                    discRow.classList.remove('hidden');
-                    document.getElementById('od-discount').innerText = '-' + o.discount.toLocaleString('vi-VN');
-                } else {
-                    discRow.classList.add('hidden');
-                }
-
-                const badge = document.getElementById('od-status-badge');
-                const btnPay = document.getElementById('btn-pay-debt');
-                
-                if (o.status === 'debt') {
-                    badge.className = "px-3 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-600 uppercase tracking-wide";
-                    badge.innerText = "Chưa thanh toán";
-                    btnPay.classList.remove('hidden');
-                } else {
-                    badge.className = "px-3 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-600 uppercase tracking-wide";
-                    badge.innerText = "Đã thanh toán";
-                    btnPay.classList.add('hidden');
-                }
-
-                const list = document.getElementById('od-items');
-                list.innerHTML = '';
-                o.items.forEach(i => {
-                    const row = document.createElement('div');
-                    row.className = 'flex justify-between border-b border-gray-50 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0';
-                    row.innerHTML = `<span class="font-bold text-gray-600">${i.name} ${i.variantName ? `<span class="text-xs text-duo-blue bg-blue-50 px-1 rounded ml-1">(${i.variantName})</span>` : ''} <span class="text-gray-400 text-xs">x${i.qty}</span></span><span class="font-bold text-gray-800">${(i.price * i.qty).toLocaleString('vi-VN')}</span>`;
-                    list.appendChild(row);
-                });
-            },
-
-            closeOrderDetail() { document.getElementById('order-detail-modal').classList.add('hidden'); },
-            
-            deleteCurrentOrder() {
-                const id = this.data.currentOrderDetailId;
-                if(confirm('Bạn chắc chắn muốn xóa đơn hàng này? Hành động này không thể hoàn tác.')) {
-                     this.data.orders = this.data.orders.filter(o => o.id !== id);
-                     this.saveData();
-                     this.closeOrderDetail();
-                     this.renderStats();
-                     this.showToast('Đã xóa đơn hàng!');
-                     this.playSound('delete');
-                }
-            },
-
-            payDebtCurrentOrder() {
-                const id = this.data.currentOrderDetailId;
-                const idx = this.data.orders.findIndex(o => o.id === id);
-                if (idx > -1) {
-                    if(confirm('Xác nhận khách đã trả nợ?')) {
-                        // Change status
-                        this.data.orders[idx].status = 'paid';
-                        this.data.orders[idx].paymentMethod = 'cash'; // Assume cash for repayment
-                        this.saveData();
-                        
-                        // Close modal first
-                        this.closeOrderDetail();
-                        
-                        // Refresh stats to update Revenue/Profit and Debt Total
-                        this.renderStats();
-                        
-                        this.showToast('Đã cập nhật thanh toán!');
-                        this.playSound('success');
-                    }
-                }
-            },
-
-            showToast(msg) {
-                const t = document.getElementById('toast');
-                document.getElementById('toast-msg').innerText = msg;
-                t.classList.remove('-translate-y-32');
-                t.classList.add('translate-y-0');
-                setTimeout(() => {
-                    t.classList.remove('translate-y-0');
-                    t.classList.add('-translate-y-32');
-                }, 2000);
+          if (window.innerWidth < 768) {
+            document
+              .querySelectorAll(".overflow-y-auto")
+              .forEach((el) => el.classList.add("pb-80"));
+            setTimeout(
+              () =>
+                inputEl.scrollIntoView({ behavior: "smooth", block: "center" }),
+              300
+            );
+          }
+        },
+        closeNumpad() {
+          document.getElementById("numpad-sheet").classList.add("hidden");
+          document
+            .querySelectorAll(".overflow-y-auto")
+            .forEach((el) => el.classList.remove("pb-80"));
+          this.data.config.numpadTarget = null;
+          this.calcCheckout();
+          this.calcProfitPreview();
+        },
+        numpadInput(char) {
+          this.playSound("click");
+          const el = this.data.config.numpadTarget;
+          if (!el) return;
+          let val = el.value.toString();
+          if (this.data.config.numpadMode === "phone") {
+            if (val.length >= 10) return;
+            if (val === "" && char !== "0") return;
+            el.value = val + char;
+          } else if (this.data.config.numpadMode === "money") {
+            if (
+              el.id === "checkout-discount" &&
+              this.data.config.discountType === "percent"
+            ) {
+              let next = val + char;
+              if (parseInt(next) > 100) next = "100";
+              el.value = next;
+            } else {
+              let raw = val.replace(/\./g, "") + char;
+              el.value = this.formatMoney(raw);
             }
-        };
+          } else el.value = val + char;
+          el.dispatchEvent(new Event("input"));
+          this.calcCheckout();
+          this.calcProfitPreview();
+        },
+        numpadDelete() {
+          const el = this.data.config.numpadTarget;
+          if (!el) return;
+          let val = el.value.toString();
+          if (val.length === 0) return;
+          if (
+            this.data.config.numpadMode === "money" &&
+            !(
+              el.id === "checkout-discount" &&
+              this.data.config.discountType === "percent"
+            )
+          ) {
+            let raw = val.replace(/\./g, "").slice(0, -1);
+            el.value = raw ? this.formatMoney(raw) : "";
+          } else el.value = val.slice(0, -1);
+          el.dispatchEvent(new Event("input"));
+          this.calcCheckout();
+          this.calcProfitPreview();
+        },
 
-        window.onload = () => app.init();
+        // --- PROFIT CALCULATION LOGIC ---
+        calcProfitPreview() {
+          // Chỉ chạy khi modal product đang mở
+          if (
+            document
+              .getElementById("modal-product")
+              .classList.contains("hidden")
+          )
+            return;
+
+          const costStr = document.getElementById("prod-cost").value;
+          const priceStr = document.getElementById("prod-price").value;
+          const cost = this.parseMoney(costStr);
+          const price = this.parseMoney(priceStr);
+          const isConsignment = document
+            .getElementById("toggle-consignment-bg")
+            .classList.contains("bg-duo-green");
+
+          let profit = 0;
+
+          if (isConsignment) {
+            // Ký gửi: Lợi nhuận = Hoa hồng (chính là giá trị nhập vào ô Cost)
+            // Ở chế độ ký gửi, ô "Giá vốn" (prod-cost) đóng vai trò là tiền hoa hồng nhận được
+            profit = cost;
+          } else {
+            // Hàng thường: Lợi nhuận = Giá bán - Giá vốn
+            profit = price - cost;
+          }
+
+          const displayEl = document.getElementById("prod-profit-preview");
+          displayEl.innerText = this.formatMoney(profit);
+
+          if (profit > 0) {
+            displayEl.className = "font-black text-duo-green text-lg";
+          } else if (profit < 0) {
+            displayEl.className = "font-black text-duo-red text-lg";
+          } else {
+            displayEl.className = "font-black text-duo-grayShade text-lg";
+          }
+        },
+
+        renderInventory() {
+          const list = document.getElementById("inventory-list");
+          list.innerHTML = "";
+          this.data.products.forEach((p) => {
+            const totalStock = p.hasVariants
+              ? p.variants.reduce((a, b) => a + b.stock, 0)
+              : p.stock;
+            const html = `
+                        <div class="bg-white p-4 rounded-3xl border-2 border-duo-gray flex justify-between items-center group shadow-sm">
+                            <div>
+                                <h3 class="font-extrabold text-duo-text text-lg">${
+                                  p.name
+                                }</h3>
+                                <div class="text-xs text-duo-grayShade font-bold mt-1">${
+                                  p.isConsignment
+                                    ? "Ký gửi"
+                                    : "Vốn: " + this.formatMoney(p.cost)
+                                }</div>
+                                <div class="text-duo-blue font-extrabold text-lg mt-1">${this.formatMoney(
+                                  p.price
+                                )}</div>
+                            </div>
+                            <div class="flex flex-col items-end gap-3">
+                                <span class="px-3 py-1 rounded-xl text-xs font-extrabold ${
+                                  totalStock == 0
+                                    ? "bg-red-100 text-duo-red"
+                                    : totalStock < 5
+                                    ? "bg-yellow-100 text-duo-yellow"
+                                    : "bg-green-100 text-duo-green"
+                                }">${totalStock} kho</span>
+                                <div class="flex gap-2">
+                                    <button onclick="app.confirmDeleteProduct(${
+                                      p.id
+                                    })" class="w-10 h-10 rounded-xl bg-white border-2 border-duo-gray text-duo-grayShade hover:bg-red-50 hover:text-duo-red hover:border-duo-red btn-duo flex items-center justify-center">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                    <button onclick="app.openProductModal(${
+                                      p.id
+                                    })" class="w-10 h-10 rounded-xl bg-duo-blue border-2 border-duo-blueShade text-white btn-duo flex items-center justify-center">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+            list.innerHTML += html;
+          });
+        },
+
+        confirmDeleteProduct(id) {
+          this.data.config.deletingType = "product";
+          this.data.config.deletingId = id;
+          document.getElementById("confirm-title").innerText = "Xóa sản phẩm?";
+          document.getElementById("confirm-msg").innerText =
+            "Sản phẩm sẽ bị xóa khỏi kho vĩnh viễn.";
+          document.getElementById("modal-confirm").classList.remove("hidden");
+          document.getElementById("btn-confirm-yes").onclick = () =>
+            this.executeDelete();
+        },
+
+        executeDelete() {
+          if (this.data.config.deletingType === "product") {
+            const idx = this.data.products.findIndex(
+              (x) => x.id === this.data.config.deletingId
+            );
+            if (idx > -1) this.data.products.splice(idx, 1);
+          } else if (this.data.config.deletingType === "order") {
+            const idx = this.data.orders.findIndex(
+              (x) => x.id === this.data.config.deletingId
+            );
+            if (idx > -1) {
+              const o = this.data.orders[idx];
+              o.items.forEach((item) => {
+                const prod = this.data.products.find((p) => p.id === item.id);
+                if (prod) {
+                  if (prod.hasVariants) {
+                    const v = prod.variants.find(
+                      (x) => x.name === item.variant
+                    );
+                    if (v) v.stock += item.qty;
+                  } else prod.stock += item.qty;
+                }
+              });
+              this.data.orders.splice(idx, 1);
+            }
+            this.closeModal("modal-order-detail");
+          }
+          this.saveData();
+          this.loadData(); // Reload all
+          this.renderInventory();
+          this.renderPosProducts();
+          this.updateStats();
+          this.closeModal("modal-confirm");
+          this.showToast("Đã xóa thành công!");
+        },
+
+        openProductModal(id = null) {
+          this.playSound("click");
+          document.getElementById("modal-product").classList.remove("hidden");
+          document.getElementById("prod-name").value = "";
+          document.getElementById("prod-cost").value = "";
+          document.getElementById("prod-price").value = "";
+          document.getElementById("prod-stock").value = "";
+          document.getElementById("variant-list").innerHTML = "";
+          document.getElementById("prod-profit-preview").innerText = "0"; // Reset profit
+
+          this.data.config.editingProdId = id;
+          this.setToggleUI("consignment", false);
+          this.setToggleUI("variant", false);
+
+          if (id) {
+            const p = this.data.products.find((x) => x.id === id);
+            if (p) {
+              document.getElementById("prod-name").value = p.name;
+              document.getElementById("prod-cost").value = this.formatMoney(
+                p.cost
+              );
+              document.getElementById("prod-price").value = this.formatMoney(
+                p.price
+              );
+              if (p.isConsignment) this.setToggleUI("consignment", true);
+              if (p.hasVariants) {
+                this.setToggleUI("variant", true);
+                p.variants.forEach((v) => this.addVariantRow(v.name, v.stock));
+              } else document.getElementById("prod-stock").value = p.stock;
+
+              this.calcProfitPreview(); // Calc immediately
+            }
+          }
+        },
+
+        setToggleUI(type, active) {
+          const bg = document.getElementById(`toggle-${type}-bg`);
+          const dot = document.getElementById(`toggle-${type}-dot`);
+          if (active) {
+            bg.classList.remove("bg-duo-gray");
+            bg.classList.add("bg-duo-green");
+            dot.classList.add("translate-x-6", "border-duo-green");
+            dot.classList.remove("border-duo-gray");
+          } else {
+            bg.classList.add("bg-duo-gray");
+            bg.classList.remove("bg-duo-green");
+            dot.classList.remove("translate-x-6", "border-duo-green");
+            dot.classList.add("border-duo-gray");
+          }
+          if (type === "consignment") {
+            document.getElementById("label-cost").innerText = active
+              ? "HOA HỒNG"
+              : "GIÁ VỐN";
+            this.calcProfitPreview();
+          }
+          if (type === "variant") {
+            if (active) {
+              document
+                .getElementById("section-simple-stock")
+                .classList.add("hidden");
+              document
+                .getElementById("section-variants")
+                .classList.remove("hidden");
+            } else {
+              document
+                .getElementById("section-simple-stock")
+                .classList.remove("hidden");
+              document
+                .getElementById("section-variants")
+                .classList.add("hidden");
+            }
+          }
+        },
+        toggleConsignment() {
+          const bg = document.getElementById("toggle-consignment-bg");
+          this.setToggleUI(
+            "consignment",
+            !bg.classList.contains("bg-duo-green")
+          );
+        },
+        toggleVariants() {
+          const bg = document.getElementById("toggle-variant-bg");
+          this.setToggleUI("variant", !bg.classList.contains("bg-duo-green"));
+        },
+        addVariantRow(name = "", stock = "") {
+          const div = document.createElement("div");
+          div.className = "flex gap-2 items-center animate-slide-up";
+          div.innerHTML = `
+                    <input type="text" placeholder="Màu/Size" value="${name}" class="var-name flex-1 h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-bold text-lg">
+                    <input type="number" placeholder="SL" value="${stock}" class="var-stock w-20 h-12 px-4 rounded-xl border-2 border-duo-gray focus:border-duo-blue outline-none font-extrabold text-center text-lg">
+                    <button onclick="this.parentElement.remove()" class="w-10 h-10 text-duo-red"><i class="fa-solid fa-trash"></i></button>`;
+          document.getElementById("variant-list").appendChild(div);
+        },
+        saveProduct() {
+          const name = document.getElementById("prod-name").value;
+          const cost = this.parseMoney(
+            document.getElementById("prod-cost").value
+          );
+          const price = this.parseMoney(
+            document.getElementById("prod-price").value
+          );
+          const isConsignment = document
+            .getElementById("toggle-consignment-bg")
+            .classList.contains("bg-duo-green");
+          const hasVariants = document
+            .getElementById("toggle-variant-bg")
+            .classList.contains("bg-duo-green");
+          if (!name || !price) return;
+          let stock = 0;
+          let variants = [];
+          if (hasVariants) {
+            document.querySelectorAll("#variant-list > div").forEach((row) => {
+              const n = row.querySelector(".var-name").value;
+              const s = parseInt(row.querySelector(".var-stock").value) || 0;
+              if (n) variants.push({ name: n, stock: s });
+            });
+          } else
+            stock = parseInt(document.getElementById("prod-stock").value) || 0;
+
+          const newProd = {
+            id: this.data.config.editingProdId || Date.now(),
+            name,
+            price,
+            cost,
+            isConsignment,
+            hasVariants,
+            stock,
+            variants,
+          };
+          if (this.data.config.editingProdId) {
+            const idx = this.data.products.findIndex(
+              (x) => x.id === this.data.config.editingProdId
+            );
+            this.data.products[idx] = newProd;
+          } else this.data.products.push(newProd);
+          this.saveData();
+          this.closeModal("modal-product");
+          this.renderInventory();
+          this.renderPosProducts();
+          this.showToast("Đã lưu sản phẩm!");
+          this.playSound("success");
+        },
+
+        renderPosProducts(search = "") {
+          const container = document.getElementById("pos-product-list");
+          container.innerHTML = "";
+          const filtered = this.data.products.filter((p) =>
+            p.name.toLowerCase().includes(search.toLowerCase())
+          );
+          filtered.forEach((p) => {
+            const totalStock = p.hasVariants
+              ? p.variants.reduce((a, b) => a + b.stock, 0)
+              : p.stock;
+            const stockColor =
+              totalStock === 0
+                ? "bg-duo-red"
+                : totalStock < 5
+                ? "bg-duo-yellow"
+                : "bg-duo-green";
+            const html = `
+                        <div onclick="app.addToCartClick(${
+                          p.id
+                        })" class="bg-white p-3 rounded-3xl border-2 border-duo-gray hover:border-duo-blue cursor-pointer relative h-36 flex flex-col justify-between btn-duo border-b-4">
+                            <div class="absolute top-2 right-2 w-3 h-3 ${stockColor} rounded-full"></div>
+                            <h4 class="font-extrabold text-duo-text text-sm leading-tight line-clamp-2">${
+                              p.name
+                            }</h4>
+                            <div class="mt-auto">
+                                <div class="text-duo-blue font-black text-lg">${this.formatMoney(
+                                  p.price
+                                )}</div>
+                                <div class="text-[10px] text-duo-grayShade font-bold">Còn: ${totalStock}</div>
+                            </div>
+                        </div>`;
+            container.innerHTML += html;
+          });
+        },
+        addToCartClick(id) {
+          this.playSound("click");
+          const p = this.data.products.find((x) => x.id === id);
+          if (!p) return;
+          if (p.hasVariants) {
+            const list = document.getElementById("select-variant-list");
+            list.innerHTML = "";
+            document.getElementById("select-variant-title").innerText = p.name;
+            p.variants.forEach((v) => {
+              const btn = document.createElement("button");
+              btn.className = `p-3 rounded-2xl border-2 font-bold transition-all btn-duo h-20 ${
+                v.stock > 0
+                  ? "border-duo-blue text-duo-blue bg-blue-50 border-b-4 border-duo-blueShade"
+                  : "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
+              }`;
+              btn.innerHTML = `<span class="block text-sm">${v.name}</span><span class="text-[10px]">Kho: ${v.stock}</span>`;
+              btn.onclick = () => {
+                if (v.stock > 0) {
+                  this.addToCart(p, v.name);
+                  this.closeModal("modal-select-variant");
+                }
+              };
+              list.appendChild(btn);
+            });
+            document
+              .getElementById("modal-select-variant")
+              .classList.remove("hidden");
+          } else {
+            if (p.stock > 0) this.addToCart(p, null);
+            else this.showToast("Sản phẩm đã hết hàng!", "error");
+          }
+        },
+        addToCart(product, variantName) {
+          this.playSound("pop");
+          const existing = this.data.cart.find(
+            (x) => x.id === product.id && x.variant === variantName
+          );
+          if (existing) {
+            let limit = product.hasVariants
+              ? product.variants.find((v) => v.name === variantName).stock
+              : product.stock;
+            if (existing.qty < limit) {
+              existing.qty++;
+              this.showToast("Đã thêm vào giỏ");
+            } else {
+              this.showToast("Đã đạt giới hạn kho!", "error");
+            }
+          } else {
+            this.data.cart.push({
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              cost: product.cost,
+              isConsignment: product.isConsignment,
+              variant: variantName,
+              qty: 1,
+            });
+            this.showToast("Đã thêm vào giỏ");
+          }
+          this.updateCartUI();
+        },
+        changeCartQty(idx, delta) {
+          const item = this.data.cart[idx];
+          const product = this.data.products.find((x) => x.id === item.id);
+          let limit = product.hasVariants
+            ? product.variants.find((v) => v.name === item.variant).stock
+            : product.stock;
+          if (delta > 0 && item.qty < limit) item.qty++;
+          if (delta < 0 && item.qty > 1) item.qty--;
+          this.playSound("click");
+          this.updateCartUI();
+        },
+        removeFromCart(idx) {
+          this.playSound("click");
+          this.data.cart.splice(idx, 1);
+          this.updateCartUI();
+        },
+
+        updateCartUI() {
+          const total = this.data.cart.reduce((a, b) => a + b.price * b.qty, 0);
+          const count = this.data.cart.reduce((a, b) => a + b.qty, 0);
+          const render = (id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML =
+              this.data.cart.length === 0
+                ? `<div class="text-center text-duo-grayShade mt-10 font-bold opacity-50"><i class="fa-solid fa-ghost text-4xl mb-2"></i><p>Trống trơn</p></div>`
+                : "";
+            this.data.cart.forEach((item, idx) => {
+              el.innerHTML += `
+                            <div class="flex justify-between items-center bg-white p-3 rounded-2xl border-2 border-duo-gray mb-2 animate-pop">
+                                <div class="flex-1">
+                                    <div class="font-extrabold text-sm text-duo-text">${
+                                      item.name
+                                    } <span class="text-[10px] bg-duo-gray px-1 rounded text-duo-text">${
+                item.variant || ""
+              }</span></div>
+                                    <div class="text-duo-blue font-bold text-xs">${this.formatMoney(
+                                      item.price
+                                    )}</div>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="app.changeCartQty(${idx}, -1)" class="w-7 h-7 rounded-lg bg-gray-100 font-bold">-</button>
+                                    <span class="font-bold text-sm w-5 text-center">${
+                                      item.qty
+                                    }</span>
+                                    <button onclick="app.changeCartQty(${idx}, 1)" class="w-7 h-7 rounded-lg bg-gray-100 font-bold">+</button>
+                                    <button onclick="app.removeFromCart(${idx})" class="w-7 h-7 text-duo-red ml-1"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>`;
+            });
+          };
+          render("cart-items-pc");
+          render("cart-items-mobile");
+          document.getElementById("cart-count-pc").innerText = count;
+          document.getElementById("cart-total-pc").innerText =
+            this.formatMoney(total);
+          document.getElementById("cart-total-mobile").innerText =
+            this.formatMoney(total);
+          document.getElementById("cart-badge-mobile").innerText = count;
+          document
+            .getElementById("cart-badge-mobile")
+            .classList.toggle("hidden", count === 0);
+          document
+            .getElementById("fab-cart")
+            .classList.toggle(
+              "hidden",
+              count === 0 || this.data.config.activeTab !== "pos"
+            );
+          document.getElementById("fab-count").innerText = count;
+        },
+
+        openCartMobile() {
+          this.playSound("click");
+          document
+            .getElementById("cart-sheet-mobile")
+            .classList.remove("hidden");
+        },
+
+        closeCartMobile() {
+          document.getElementById("cart-sheet-mobile").classList.add("hidden");
+        },
+
+        openCheckoutModal() {
+          if (this.data.cart.length === 0) return;
+          this.playSound("click");
+          this.closeCartMobile();
+          document.getElementById("modal-checkout").classList.remove("hidden");
+          document.getElementById("cust-name").value = "";
+          document.getElementById("cust-phone").value = "";
+          document.getElementById("checkout-discount").value = "";
+          document.getElementById("check-debt").checked = false;
+          this.toggleDebtState();
+          this.setPaymentMethod("cash");
+          this.setDiscountType("money");
+          this.calcCheckout();
+        },
+
+        setDiscountType(type) {
+          this.data.config.discountType = type;
+          const b1 = document.getElementById("btn-disc-money");
+          const b2 = document.getElementById("btn-disc-percent");
+          const inp = document.getElementById("checkout-discount");
+
+          // Clear value to prevent logic error when switching (e.g. 50000 -> 50000%)
+          inp.value = "";
+
+          if (type === "money") {
+            b1.classList.add("bg-white", "shadow-sm", "text-duo-text");
+            b1.classList.remove("text-duo-grayShade");
+            b2.classList.remove("bg-white", "shadow-sm", "text-duo-text");
+            b2.classList.add("text-duo-grayShade");
+          } else {
+            b2.classList.add("bg-white", "shadow-sm", "text-duo-text");
+            b2.classList.remove("text-duo-grayShade");
+            b1.classList.remove("bg-white", "shadow-sm", "text-duo-text");
+            b1.classList.add("text-duo-grayShade");
+          }
+          this.calcCheckout();
+        },
+
+        calcCheckout() {
+          const subtotal = this.data.cart.reduce(
+            (a, b) => a + b.price * b.qty,
+            0
+          );
+          let discountInput =
+            document.getElementById("checkout-discount").value;
+          let discountVal = this.parseMoney(discountInput);
+          let discountAmount = 0;
+
+          if (this.data.config.discountType === "percent") {
+            if (discountVal > 100) discountVal = 100;
+            discountAmount = Math.floor(subtotal * (discountVal / 100));
+          } else discountAmount = discountVal;
+
+          if (discountAmount > subtotal) discountAmount = subtotal;
+          document.getElementById("checkout-subtotal").innerText =
+            this.formatMoney(subtotal);
+          document.getElementById("checkout-final").innerText =
+            this.formatMoney(subtotal - discountAmount);
+        },
+
+        setPaymentMethod(method) {
+          this.data.config.paymentMethod = method;
+          const b1 = document.getElementById("pm-cash");
+          const b2 = document.getElementById("pm-transfer");
+          const active =
+            "bg-duo-blue text-white border-duo-blue border-b-4 border-duo-blueShade";
+          const inactive =
+            "bg-white text-duo-grayShade border-duo-gray border-b-4 border-duo-grayShade";
+          if (method === "cash") {
+            b1.className = `h-14 rounded-2xl border-2 font-extrabold btn-duo flex items-center justify-center gap-2 ${active}`;
+            b2.className = `h-14 rounded-2xl border-2 font-extrabold btn-duo flex items-center justify-center gap-2 ${inactive}`;
+          } else {
+            b2.className = `h-14 rounded-2xl border-2 font-extrabold btn-duo flex items-center justify-center gap-2 ${active}`;
+            b1.className = `h-14 rounded-2xl border-2 font-extrabold btn-duo flex items-center justify-center gap-2 ${inactive}`;
+          }
+        },
+        toggleDebtState() {
+          const isDebt = document.getElementById("check-debt").checked;
+          document
+            .getElementById("check-debt-icon")
+            .classList.toggle("hidden", !isDebt);
+          document
+            .getElementById("checkout-final")
+            .classList.toggle("text-duo-red", isDebt);
+          document
+            .getElementById("checkout-final")
+            .classList.toggle("text-duo-blue", !isDebt);
+        },
+        processCheckout() {
+          const custName = document.getElementById("cust-name").value;
+          if (!custName && document.getElementById("check-debt").checked) {
+            const inp = document.getElementById("cust-name");
+            inp.classList.add("border-duo-red");
+            setTimeout(() => inp.classList.remove("border-duo-red"), 1000);
+            return;
+          }
+          this.data.cart.forEach((item) => {
+            const prod = this.data.products.find((p) => p.id === item.id);
+            if (prod) {
+              if (prod.hasVariants) {
+                const v = prod.variants.find((x) => x.name === item.variant);
+                if (v) v.stock -= item.qty;
+              } else prod.stock -= item.qty;
+            }
+          });
+
+          const subtotal = this.data.cart.reduce(
+            (a, b) => a + b.price * b.qty,
+            0
+          );
+          const discountRaw = this.parseMoney(
+            document.getElementById("checkout-discount").value
+          );
+          const discountAmount =
+            this.data.config.discountType === "percent"
+              ? Math.floor(subtotal * (discountRaw / 100))
+              : discountRaw;
+          const final = subtotal - discountAmount;
+
+          let profit = 0,
+            commission = 0;
+          this.data.cart.forEach((item) => {
+            if (item.isConsignment) commission += item.cost * item.qty;
+            else profit += (item.price - item.cost) * item.qty;
+          });
+          profit -= discountAmount;
+
+          const order = {
+            id: Date.now(),
+            date: new Date().toISOString(),
+            customer: {
+              name: custName || "Khách lẻ",
+              phone: document.getElementById("cust-phone").value,
+            },
+            items: [...this.data.cart],
+            subtotal,
+            discount: discountAmount,
+            total: final,
+            method: this.data.config.paymentMethod,
+            status: document.getElementById("check-debt").checked
+              ? "debt"
+              : "paid",
+            profit,
+            commission,
+          };
+          this.data.orders.unshift(order);
+          this.data.cart = [];
+          this.saveData();
+          this.closeModal("modal-checkout");
+          this.renderInventory();
+          this.renderPosProducts();
+          this.updateCartUI();
+          this.updateStats();
+
+          this.showToast("Thanh toán thành công!");
+          this.playSound("success");
+        },
+
+        filterStats() {
+          const search = document
+            .getElementById("stats-search")
+            .value.toLowerCase();
+          const monthStr = document.getElementById("stats-month").value;
+          const isDebtMode = this.data.config.isDebtFilter;
+          const filtered = this.data.orders.filter((o) => {
+            const d = new Date(o.date);
+            let matchTime = true;
+            if (monthStr !== "all") {
+              const [m, y] = monthStr.split("/");
+              matchTime = d.getMonth() + 1 == m && d.getFullYear() == y;
+            }
+            return (
+              matchTime &&
+              (o.customer.name.toLowerCase().includes(search) ||
+                o.customer.phone.includes(search)) &&
+              (!isDebtMode || o.status === "debt")
+            );
+          });
+
+          let revenue = 0,
+            profit = 0,
+            commission = 0,
+            debt = 0;
+          filtered.forEach((o) => {
+            if (o.status === "paid") {
+              revenue += o.total;
+              profit += o.profit;
+              commission += o.commission;
+            } else debt += o.total;
+          });
+
+          document.getElementById("stat-revenue").innerText =
+            this.formatMoney(revenue);
+          document.getElementById("stat-profit").innerText =
+            this.formatMoney(profit);
+          document.getElementById("stat-commission").innerText =
+            this.formatMoney(commission);
+          document.getElementById("stat-debt").innerText = this.formatMoney(
+            isDebtMode ? debt : profit + commission
+          );
+          document.getElementById("stat-label-debt").innerText = isDebtMode
+            ? "Tổng nợ cần thu"
+            : "Thực thu (Lãi+HH)";
+
+          document.getElementById("order-list").innerHTML = filtered
+            .map(
+              (o) => `
+                    <div onclick="app.showOrderDetail(${
+                      o.id
+                    })" class="p-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-extrabold text-duo-text">#${o.id
+                                  .toString()
+                                  .slice(-4)}</span>
+                                <span class="${
+                                  o.status === "paid"
+                                    ? "bg-green-100 text-duo-green"
+                                    : "bg-red-100 text-duo-red"
+                                } text-[10px] font-bold px-2 py-1 rounded-lg">${
+                o.status === "paid" ? "Đã thu" : "Nợ"
+              }</span>
+                            </div>
+                            <div class="text-xs text-duo-grayShade mt-1 font-bold">${new Date(
+                              o.date
+                            ).toLocaleString("vi-VN")} - ${
+                o.customer.name
+              }</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-duo-blue">${this.formatMoney(
+                              o.total
+                            )}</div>
+                            <div class="text-[10px] text-duo-grayShade font-bold">${
+                              o.items.length
+                            } món</div>
+                        </div>
+                    </div>`
+            )
+            .join("");
+        },
+
+        updateStats() {
+          const select = document.getElementById("stats-month");
+          if (select.options.length === 0) {
+            const d = new Date();
+            const allOpt = document.createElement("option");
+            allOpt.value = "all";
+            allOpt.text = "Tất cả thời gian";
+            select.appendChild(allOpt);
+            for (let i = 0; i < 12; i++) {
+              let m = d.getMonth() - i,
+                y = d.getFullYear();
+              if (m < 0) {
+                m += 12;
+                y -= 1;
+              }
+              const val = `${m + 1}/${y}`;
+              const opt = document.createElement("option");
+              opt.value = val;
+              opt.text = "Tháng " + val;
+              select.appendChild(opt);
+            }
+          }
+          this.filterStats();
+        },
+        toggleDebtFilter() {
+          this.data.config.isDebtFilter = !this.data.config.isDebtFilter;
+          const btn = document.getElementById("btn-debt-filter");
+          btn.classList.toggle("border-duo-red", this.data.config.isDebtFilter);
+          btn.classList.toggle("text-duo-red", this.data.config.isDebtFilter);
+          btn.classList.toggle(
+            "text-duo-grayShade",
+            !this.data.config.isDebtFilter
+          );
+          this.filterStats();
+        },
+
+        showOrderDetail(id) {
+          this.playSound("click");
+          const o = this.data.orders.find((x) => x.id === id);
+          if (!o) return;
+          const modal = document.getElementById("modal-order-detail");
+          document.getElementById("order-detail-content").innerHTML = `
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+                        <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-4">
+                            <h2 class="font-extrabold text-2xl text-duo-green uppercase tracking-wider">Shop Thiện</h2>
+                            <p class="text-xs text-gray-400 font-bold mt-1">Hóa đơn bán lẻ</p>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-gray-500 mb-4">
+                            <div class="text-left">
+                                <p>Mã đơn: <span class="text-duo-text">#${o.id
+                                  .toString()
+                                  .slice(-4)}</span></p>
+                                <p>Ngày: <span class="text-duo-text">${new Date(
+                                  o.date
+                                ).toLocaleString("vi-VN")}</span></p>
+                            </div>
+                            <div class="text-right">
+                                <p>${o.customer.name}</p>
+                                <p>${o.customer.phone || "---"}</p>
+                            </div>
+                        </div>
+                        <div class="border-b-2 border-dashed border-gray-300 pb-4 mb-4 space-y-2">
+                            ${o.items
+                              .map(
+                                (i) => `
+                                <div class="flex justify-between text-sm">
+                                    <div class="flex-1 font-bold text-duo-text">
+                                        ${i.name} ${
+                                  i.variant
+                                    ? `<span class="text-xs bg-gray-100 px-1 rounded text-gray-500">${i.variant}</span>`
+                                    : ""
+                                }
+                                        <div class="text-xs text-gray-400 font-normal">x${
+                                          i.qty
+                                        } @ ${this.formatMoney(i.price)}</div>
+                                    </div>
+                                    <div class="font-extrabold text-duo-text">${this.formatMoney(
+                                      i.price * i.qty
+                                    )}</div>
+                                </div>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                        <div class="space-y-1 text-sm text-right">
+                            <div class="flex justify-between text-gray-500 font-bold">
+                                <span>Tạm tính</span>
+                                <span>${this.formatMoney(o.subtotal)}</span>
+                            </div>
+                            ${
+                              o.discount > 0
+                                ? `
+                            <div class="flex justify-between text-duo-red font-bold">
+                                <span>Giảm giá</span>
+                                <span>-${this.formatMoney(o.discount)}</span>
+                            </div>`
+                                : ""
+                            }
+                            <div class="flex justify-between text-xl font-black text-duo-blue mt-2 pt-2 border-t border-gray-100">
+                                <span>TỔNG CỘNG</span>
+                                <span>${this.formatMoney(o.total)}</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold text-gray-400 mt-1">
+                                <span>Hình thức</span>
+                                <span class="uppercase">${
+                                  o.method === "cash"
+                                    ? "Tiền mặt"
+                                    : "Chuyển khoản"
+                                }</span>
+                            </div>
+                             <div class="flex justify-between text-xs font-bold text-gray-400">
+                                <span>Trạng thái</span>
+                                <span class="${
+                                  o.status === "paid"
+                                    ? "text-duo-green"
+                                    : "text-duo-red"
+                                } uppercase">${
+            o.status === "paid" ? "Đã thanh toán" : "Ghi nợ"
+          }</span>
+                            </div>
+                        </div>
+                        <div class="text-center mt-6 text-xs font-bold text-gray-400 italic">
+                            Cảm ơn quý khách đã mua hàng!
+                        </div>
+                    </div>`;
+
+          document.getElementById("order-actions").innerHTML = `
+                    <button onclick="app.confirmDeleteProduct(${
+                      o.id
+                    }); app.data.config.deletingType='order'" class="flex-1 h-12 border-2 border-duo-gray text-duo-grayShade rounded-2xl font-extrabold btn-duo border-b-4 hover:border-duo-red hover:text-duo-red">Xóa đơn</button>
+                    ${
+                      o.status === "debt"
+                        ? `<button onclick="app.payDebt(${o.id})" class="flex-1 h-12 bg-duo-green text-white rounded-2xl font-extrabold btn-duo border-duo-greenShade shadow-xl">Trả nợ</button>`
+                        : `<button class="flex-1 h-12 bg-gray-100 text-gray-400 rounded-2xl font-extrabold cursor-default border-2 border-gray-200">Đã thu</button>`
+                    }`;
+          modal.classList.remove("hidden");
+        },
+        payDebt(id) {
+          const o = this.data.orders.find((x) => x.id === id);
+          if (o) {
+            o.status = "paid";
+            this.saveData();
+            this.closeModal("modal-order-detail");
+            this.updateStats();
+            this.showToast("Đã trả nợ!");
+            this.playSound("success");
+          }
+        },
+
+        closeModal(id) {
+          document.getElementById(id).classList.add("hidden");
+        },
+      };
+      window.onload = () => app.init();
     </script>
-</body>
+  </body>
 </html>
